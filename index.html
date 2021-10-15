@@ -28,7 +28,7 @@
     var oldFetch = fetch;
     window.fetch = function (resource, init) {
       if (resource.includes('blazor.boot.json')) {
-        resource = window.location.origin + '/_framework/blazor.boot.json';
+        resource = window.location.origin + '/superpatch/_framework/blazor.boot.json';
       }
       window.fetch = oldFetch;
       return oldFetch(resource, init);

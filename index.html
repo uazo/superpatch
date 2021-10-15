@@ -21,6 +21,20 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
   </div>
+
+  <script>
+    // https://github.com/dotnet/aspnetcore/issues/22220
+    // fix loading blazor.boot.json
+    var oldFetch = fetch;
+    window.fetch = function (resource, init) {
+      if (resource.includes('blazor.boot.json')) {
+        resource = window.location.origin + '/_framework/blazor.boot.json';
+      }
+      window.fetch = oldFetch;
+      return oldFetch(resource, init);
+    }
+  </script>
+  
   <script src="superpatch/_framework/blazor.webassembly.js"></script>
   <script src="superpatch/_content/BlazorMonaco/lib/monaco-editor/min/vs/loader.js"></script>
   <script>require.config({ paths: { 'vs': 'superpatch/_content/BlazorMonaco/lib/monaco-editor/min/vs' } });</script>

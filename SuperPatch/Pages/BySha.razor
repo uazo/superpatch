@@ -1,0 +1,53 @@
+﻿@page "/bromite/commit/{CommitHashFromUrl}"
+
+@inherits CommonComponentBase
+
+@inject HttpClient httpClient
+@inject Services.UrlCleaner urlCleaner
+@inject Core.Services.WorkspaceService workspaceService
+
+@code {
+  [Parameter]
+  public string CommitHashFromUrl { get; set; }
+}
+
+@if (workspace == null)
+{
+  if (errorString == null)
+  {
+    <Spin></Spin>
+  }
+  else
+  {
+    <h3>@errorString</h3>
+  }
+}
+else
+{
+  <CommitViewer Workspace="workspace"></CommitViewer>
+}
+
+@code {
+
+  Workspace workspace;
+  string errorString;
+
+  protected override async Task OnInitializedAsync()
+  {
+    var sha = urlCleaner.RestoreFromUrl(CommitHashFromUrl);
+    if (sha == null) sha = "master";
+
+    var result = await workspaceService.LoadBySha(sha);
+    if (result.IsOk == false)
+      errorString = result.Message;
+    else
+      workspace = result.Result;
+
+    this.StateHasChanged();
+
+    if (workspace != null)
+      await workspaceService.LoadIfPullRequest(workspace);
+
+    base.OnInitialized();
+  }
+}

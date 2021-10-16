@@ -1,0 +1,105 @@
+﻿@using System.Linq
+@using BlazorMonaco
+
+@code {
+  [Parameter]
+  public FilePatchedContents File { get; set; }
+
+  [Parameter]
+  public int? Height { get; set; }
+}
+
+<style>
+  .monaco-editor-container {
+    height: @(Height.HasValue ? $"{Height}px" : "100%");
+  }
+
+  .decorationGlyphMarginClass {
+    background: red;
+  }
+
+  .decorationContentClass {
+    background: lightblue;
+  }
+</style>
+
+<BlazorMonaco.MonacoDiffEditor @ref="_diffEditor"
+                               ConstructionOptions="DiffEditorConstructionOptions"
+                               OnDidInit="EditorOnDidInit"></BlazorMonaco.MonacoDiffEditor>
+
+@code {
+  private BlazorMonaco.MonacoDiffEditor _diffEditor { get; set; }
+  private bool _initialized = false;
+
+  private DiffEditorConstructionOptions DiffEditorConstructionOptions(MonacoDiffEditor editor)
+  {
+    return new DiffEditorConstructionOptions
+    {
+      OriginalEditable = false,
+      ReadOnly = true,
+      FontSize = 13,
+    };
+  }
+
+  protected override async Task OnParametersSetAsync()
+  {
+    if( _initialized )
+    {
+      await EditorOnDidInit(_diffEditor);
+    }
+  }
+
+  int modelNo = 0;
+
+  private async Task EditorOnDidInit(MonacoEditorBase editor)
+  {
+    if (File == null) return;
+
+    modelNo++;
+    var originalModelName = File.FileName + $"_originalModel{modelNo}";
+    var modifiedModelName = File.FileName + $"_modifiedModel{modelNo}";
+    var language = GetLanguageFromExtension(File.FileName);
+
+    var original_model = await MonacoEditorBase.GetModel(originalModelName);
+    if (original_model == null)
+    {
+      original_model = await MonacoEditorBase.CreateModel(File?.OriginalContents?.Contents, language, originalModelName);
+    }
+
+    var modified_model = await MonacoEditorBase.GetModel(modifiedModelName);
+    if (modified_model == null)
+    {
+      modified_model = await MonacoEditorBase.CreateModel(File?.Contents, language, modifiedModelName);
+    }
+
+    await _diffEditor.SetModel(new BlazorMonaco.DiffEditorModel()
+    {
+      Original = original_model,
+      Modified = modified_model
+    });
+
+    _initialized = true;
+
+    if (File?.Diff.Chunks.Count > 0)
+    {
+      var firstChange = File.Diff.Chunks[0].RangeInfo;
+      await _diffEditor.RevealLinesInCenter(
+        firstChange.NewRange.StartLine,
+        firstChange.NewRange.StartLine + firstChange.NewRange.LineCount);
+    }
+  }
+
+  private string GetLanguageFromExtension(string fileName)
+  {
+    if (fileName.EndsWith(".cpp") || fileName.EndsWith(".h") || fileName.EndsWith(".cc")) return "cpp";
+    else if (fileName.EndsWith(".java")) return "java";
+    else if (fileName.EndsWith(".js")) return "javascript";
+    else if (fileName.EndsWith(".html")) return "html";
+    else if (fileName.EndsWith(".c")) return "c";
+    else
+    {
+      var ext = System.IO.Path.GetExtension(fileName).Replace(".","");
+      return ext;
+    }
+  }
+}

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="DataSets\D1709251127\*.diff" />
+    <EmbeddedResource Include="DataSets\D1709251127\Diff-b3a6303.txt" />
+    <EmbeddedResource Include="DataSets\D1709251127\Diff-781096c.txt" />
+    
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0-preview-20170425-07" />
+    <PackageReference Include="MSTest.TestAdapter" Version="1.1.17" />
+    <PackageReference Include="MSTest.TestFramework" Version="1.1.17" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DiffPatch\DiffPatch.csproj" />
+  </ItemGroup>
+
+</Project>

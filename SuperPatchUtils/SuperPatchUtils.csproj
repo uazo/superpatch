@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <AssemblyName>SuperPatchUtils</AssemblyName>
+    <RootNamespace>SuperPatchUtils</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="FileContentBuilder.cs" />
+    <Compile Remove="PatchViewBuilder.cs" />
+    <Compile Remove="StorageBuilder.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DiffPatch\src\DiffPatch\DiffPatch.csproj" />
+    <ProjectReference Include="..\SuperPatch.Core\SuperPatch.Core.csproj" />
+  </ItemGroup>
+
+</Project>

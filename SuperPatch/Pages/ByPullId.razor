@@ -1,0 +1,67 @@
+﻿@page "/bromite/pull/{PullIdFromUrl:int}"
+
+@inherits CommonComponentBase
+
+@inject HttpClient httpClient
+@inject Core.Services.WorkspaceService workspaceService
+@inject Core.GitHubApi.ApiService githubApi
+
+@code {
+  [Parameter]
+  public int PullIdFromUrl { get; set; } = 0;
+}
+
+@if (workspace == null)
+{
+  if (errorString == null)
+  {
+    <Spin></Spin>
+  }
+  else
+  {
+    <h3>@errorString</h3>
+  }
+}
+else
+{
+  @*<h3>@(pull.title)</h3>*@
+  <CommitViewer Workspace="workspace"></CommitViewer>
+}
+
+@code {
+
+  Workspace workspace;
+  string errorString;
+  Core.GitHubApi.PullRequest pull;
+
+  protected override async Task OnInitializedAsync()
+  {
+    if (PullIdFromUrl == 0)
+    {
+      errorString = "Invalid url";
+    }
+    else
+    {
+      pull = await githubApi.GetPullRequest("bromite/bromite", PullIdFromUrl);
+      if (pull == null)
+      {
+        errorString = $"Invalid pull id {PullIdFromUrl}";
+      }
+      else
+      {
+        var result = await workspaceService.LoadBySha(pull.head.sha);
+        if (result.IsOk == false)
+          errorString = result.Message;
+        else
+          workspace = result.Result;
+
+        this.StateHasChanged();
+
+        if (workspace != null)
+          await workspaceService.LoadIfPullRequest(workspace);
+      }
+    }
+
+    base.OnInitialized();
+  }
+}

@@ -1,0 +1,88 @@
+﻿@inherits LayoutComponentBase
+
+@inject BlazorPro.BlazorSize.ResizeListener Listener
+
+<CascadingValue Name="CommonData" Value="CommonData">
+
+  <div style="position:fixed; width:100%; height:@(CommonData?.Height)px">
+    
+    @*<div>
+
+      <Menu Mode=MenuMode.Horizontal>
+        <MenuItem Key="mail">
+          <Icon Type="mail" Theme="outline"></Icon>
+          Navigation One
+        </MenuItem>
+        <MenuItem Key="app" Disabled>
+          <Icon Type="appstore" Theme="outline"></Icon>
+          Navigation Two
+        </MenuItem>
+        <SubMenu>
+          <MenuItemGroup Title="Item 1">
+            <MenuItem Key="setting:1">Option 1</MenuItem>
+            <MenuItem Key="setting:2">Option 2</MenuItem>
+          </MenuItemGroup>
+          <MenuDivider />
+          <MenuItemGroup Title="Item 2">
+            <MenuItem Key="setting:3">Option 3</MenuItem>
+            <SubMenu Title="Option 4">
+              <MenuItem Key="setting4:1">Option 1</MenuItem>
+              <MenuItem Key="setting4:2">Option 2</MenuItem>
+            </SubMenu>
+          </MenuItemGroup>
+        </SubMenu>
+        <MenuItem Key="alipay">
+          <MenuLink Href="https://ant.design" target="_blank" rel="noopener noreferrer">
+            Navigation Four - Link
+          </MenuLink>
+        </MenuItem>
+      </Menu>
+
+    </div>*@
+
+    @Body
+  </div>
+
+</CascadingValue>
+
+@code {
+
+  private int StartupWidth, StartupHeight;
+  private CommonUIData CommonData;
+
+  protected override void OnInitialized()
+  {
+    CommonData = CommonUIData.GetNew();
+  }
+
+  protected override void OnAfterRender(bool firstRender)
+  {
+    if (firstRender)
+    {
+      Listener.OnResized += Listener_OnResized;
+    }
+    base.OnAfterRender(firstRender);
+  }
+
+  private void Listener_OnResized(object sender, BlazorPro.BlazorSize.BrowserWindowSize e)
+  {
+    if (CommonData == null)
+    {
+      StartupWidth = e.Width;
+      StartupHeight = e.Height;
+    }
+    else
+    {
+      CommonData = CommonData.Clone();
+      CommonData.Width = e.Width;
+      CommonData.Height = e.Height;
+    }
+
+    this.StateHasChanged();
+  }
+
+  public void Dispose()
+  {
+    Listener.OnResized -= Listener_OnResized;
+  }
+}

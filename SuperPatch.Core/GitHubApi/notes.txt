@@ -1,0 +1,569 @@
+﻿https://api.github.com/repos/bromite/bromite/commits/acfa2a7b832f79755cb767410a8bf37872867bec
+
+
+
+
+https://api.github.com/search/issues?q=acfa2a7b832f79755cb767410a8bf37872867bec
+{
+  "total_count": 1,
+  "incomplete_results": false,
+  "items": [
+    {
+      "url": "https://api.github.com/repos/bromite/bromite/issues/1454",
+      "repository_url": "https://api.github.com/repos/bromite/bromite",
+      "labels_url": "https://api.github.com/repos/bromite/bromite/issues/1454/labels{/name}",
+      "comments_url": "https://api.github.com/repos/bromite/bromite/issues/1454/comments",
+      "events_url": "https://api.github.com/repos/bromite/bromite/issues/1454/events",
+      "html_url": "https://github.com/bromite/bromite/pull/1454",
+      "id": 1020152331,
+      "node_id": "PR_kwDOBlnPu84s5h44",
+      "number": 1454,
+      "title": "Enable update notification",
+      "user": {
+        "login": "uazo",
+        "id": 29201891,
+        "node_id": "MDQ6VXNlcjI5MjAxODkx",
+        "avatar_url": "https://avatars.githubusercontent.com/u/29201891?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/uazo",
+        "html_url": "https://github.com/uazo",
+        "followers_url": "https://api.github.com/users/uazo/followers",
+        "following_url": "https://api.github.com/users/uazo/following{/other_user}",
+        "gists_url": "https://api.github.com/users/uazo/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/uazo/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/uazo/subscriptions",
+        "organizations_url": "https://api.github.com/users/uazo/orgs",
+        "repos_url": "https://api.github.com/users/uazo/repos",
+        "events_url": "https://api.github.com/users/uazo/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/uazo/received_events",
+        "type": "User",
+        "site_admin": false
+      },
+      "labels": [
+
+      ],
+      "state": "open",
+      "locked": false,
+      "assignee": null,
+      "assignees": [
+
+      ],
+      "milestone": null,
+      "comments": 10,
+      "created_at": "2021-10-07T15:04:47Z",
+      "updated_at": "2021-10-15T11:56:15Z",
+      "closed_at": null,
+      "author_association": "COLLABORATOR",
+      "active_lock_reason": null,
+      "draft": false,
+      "pull_request": {
+        "url": "https://api.github.com/repos/bromite/bromite/pulls/1454",
+        "html_url": "https://github.com/bromite/bromite/pull/1454",
+        "diff_url": "https://github.com/bromite/bromite/pull/1454.diff",
+        "patch_url": "https://github.com/bromite/bromite/pull/1454.patch"
+      },
+      "body": "in the end I took the patch of @wchen342 and modified it, it came easier for me.\r\nthe logic is this:\r\n\r\n- two new properties `BUILD_TIME` and `BUILD_TARGET_CPU` are inserted in the java class `org.chromium.build.BuildConfig`, the first taken from the same source as `GetBuildTime()`, the second taken directly from the args\r\n- if enabled by the user (default is disabled), every 7 days (configurable in the code), a `HEAD` request is made to the page built in `BromiteInlineUpdateController.java`, actually `UPDATE_VERSION_URL + \"bromite_\" + BuildConfig.BUILD_TARGET_CPU + \".apk\"`\r\n- if the `Last-Modified` is greater than `BUILD_TIME`, the notification appears: that leads to `getDownloadUrl()` in an incognito page\r\n\r\nThe request is made by the native to have support for the proxy (the java side is always direct) and is without cookies.\r\n\r\nCurrently nothing is downloaded automatically, it is always the user who will have to download and install. To make it easier to find the correct file I have added `arch` to download page\r\n`\r\n\"https://github.com/bromite/bromite/releases/latest?arch=\" + BuildConfig.BUILD_TARGET_CPU;\r\n`\r\nbut we can find an alternative.\r\n\r\nfixes https://github.com/bromite/bromite/issues/706\r\n",
+      "reactions": {
+        "url": "https://api.github.com/repos/bromite/bromite/issues/1454/reactions",
+        "total_count": 0,
+        "+1": 0,
+        "-1": 0,
+        "laugh": 0,
+        "hooray": 0,
+        "confused": 0,
+        "heart": 0,
+        "rocket": 0,
+        "eyes": 0
+      },
+      "timeline_url": "https://api.github.com/repos/bromite/bromite/issues/1454/timeline",
+      "performed_via_github_app": null,
+      "score": 1.0
+    }
+  ]
+}
+
+
+
+https://api.github.com/repos/bromite/bromite/pulls/1454
+https://api.github.com/repos/bromite/bromite/pulls/1454/commits
+[
+  {
+    "sha": "10da9add1032274cee33f4fc61815cace9ecd831",
+    "node_id": "C_kwDOD15akdoAKDEwZGE5YWRkMTAzMjI3NGNlZTMzZjRmYzYxODE1Y2FjZTllY2Q4MzE",
+    "commit": {
+      "author": {
+        "name": "Carmelo Messina",
+        "email": "carmelo.messina@outlook.com",
+        "date": "2021-10-07T14:37:38Z"
+      },
+      "committer": {
+        "name": "Carmelo Messina",
+        "email": "carmelo.messina@outlook.com",
+        "date": "2021-10-07T14:37:38Z"
+      },
+      "message": "Enable update notification",
+      "tree": {
+        "sha": "6bb7351f60120134e2cc43fc662455b7cafa818b",
+        "url": "https://api.github.com/repos/bromite/bromite/git/trees/6bb7351f60120134e2cc43fc662455b7cafa818b"
+      },
+      "url": "https://api.github.com/repos/bromite/bromite/git/commits/10da9add1032274cee33f4fc61815cace9ecd831",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null
+      }
+    },
+    "url": "https://api.github.com/repos/bromite/bromite/commits/10da9add1032274cee33f4fc61815cace9ecd831",
+    "html_url": "https://github.com/bromite/bromite/commit/10da9add1032274cee33f4fc61815cace9ecd831",
+    "comments_url": "https://api.github.com/repos/bromite/bromite/commits/10da9add1032274cee33f4fc61815cace9ecd831/comments",
+    "author": {
+      "login": "uazo",
+      "id": 29201891,
+      "node_id": "MDQ6VXNlcjI5MjAxODkx",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29201891?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/uazo",
+      "html_url": "https://github.com/uazo",
+      "followers_url": "https://api.github.com/users/uazo/followers",
+      "following_url": "https://api.github.com/users/uazo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/uazo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/uazo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/uazo/subscriptions",
+      "organizations_url": "https://api.github.com/users/uazo/orgs",
+      "repos_url": "https://api.github.com/users/uazo/repos",
+      "events_url": "https://api.github.com/users/uazo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/uazo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "uazo",
+      "id": 29201891,
+      "node_id": "MDQ6VXNlcjI5MjAxODkx",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29201891?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/uazo",
+      "html_url": "https://github.com/uazo",
+      "followers_url": "https://api.github.com/users/uazo/followers",
+      "following_url": "https://api.github.com/users/uazo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/uazo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/uazo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/uazo/subscriptions",
+      "organizations_url": "https://api.github.com/users/uazo/orgs",
+      "repos_url": "https://api.github.com/users/uazo/repos",
+      "events_url": "https://api.github.com/users/uazo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/uazo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "07d13a350b645546ef8df33c9abd1b45a1197878",
+        "url": "https://api.github.com/repos/bromite/bromite/commits/07d13a350b645546ef8df33c9abd1b45a1197878",
+        "html_url": "https://github.com/bromite/bromite/commit/07d13a350b645546ef8df33c9abd1b45a1197878"
+      }
+    ]
+  },
+  {
+    "sha": "5dbc455710f376602e5e4ce47a11202587dd0f9a",
+    "node_id": "C_kwDOD15akdoAKDVkYmM0NTU3MTBmMzc2NjAyZTVlNGNlNDdhMTEyMDI1ODdkZDBmOWE",
+    "commit": {
+      "author": {
+        "name": "uazo",
+        "email": "29201891+uazo@users.noreply.github.com",
+        "date": "2021-10-12T06:39:16Z"
+      },
+      "committer": {
+        "name": "GitHub",
+        "email": "noreply@github.com",
+        "date": "2021-10-12T06:39:16Z"
+      },
+      "message": "Merge branch 'master' into enable-update-notification",
+      "tree": {
+        "sha": "fee7e69df9d6319d36e82e862f02f1908b8973c5",
+        "url": "https://api.github.com/repos/bromite/bromite/git/trees/fee7e69df9d6319d36e82e862f02f1908b8973c5"
+      },
+      "url": "https://api.github.com/repos/bromite/bromite/git/commits/5dbc455710f376602e5e4ce47a11202587dd0f9a",
+      "comment_count": 0,
+      "verification": {
+        "verified": true,
+        "reason": "valid",
+        "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsBcBAABCAAQBQJhZS2UCRBK7hj4Ov3rIwAAK9QIAENyOGOxTwhyPgnkj9l2U2/f\nsOogmBKGhbeatbWlko9QxFzk3ltjw0IFCc2cJZaoNqyBX+uarbf9t/sF/VWFybjo\nw0Z/L36njMp9+MysVb4CuEfCzjx9+iQqsBUNaHNheQOs6WjmzZgbI+U0t8VJL8fT\nLA06czTcRmMYJx4L7+QZMURWgJRU/o/8BAqkFx84/Sp/sNpeGtMrPWT82SptP5Vn\nv4NaZTA6BOlVidVPW6b2KO4x6tpQ+Pn0pgZ4Nha9Nw1ocfQopL6Be0PWc/sSvSHt\nRqc7zsyK3f87Bal0xPdoCqMhj3zl2kXEvXU7Wsl3uWF8pJUS3A48beXvc8exsa4=\n=AfQ7\n-----END PGP SIGNATURE-----\n",
+        "payload": "tree fee7e69df9d6319d36e82e862f02f1908b8973c5\nparent 10da9add1032274cee33f4fc61815cace9ecd831\nparent 3884e3d7332f37895900e1c00ef928eb9e46ede5\nauthor uazo <29201891+uazo@users.noreply.github.com> 1634020756 +0200\ncommitter GitHub <noreply@github.com> 1634020756 +0200\n\nMerge branch 'master' into enable-update-notification"
+      }
+    },
+    "url": "https://api.github.com/repos/bromite/bromite/commits/5dbc455710f376602e5e4ce47a11202587dd0f9a",
+    "html_url": "https://github.com/bromite/bromite/commit/5dbc455710f376602e5e4ce47a11202587dd0f9a",
+    "comments_url": "https://api.github.com/repos/bromite/bromite/commits/5dbc455710f376602e5e4ce47a11202587dd0f9a/comments",
+    "author": {
+      "login": "uazo",
+      "id": 29201891,
+      "node_id": "MDQ6VXNlcjI5MjAxODkx",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29201891?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/uazo",
+      "html_url": "https://github.com/uazo",
+      "followers_url": "https://api.github.com/users/uazo/followers",
+      "following_url": "https://api.github.com/users/uazo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/uazo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/uazo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/uazo/subscriptions",
+      "organizations_url": "https://api.github.com/users/uazo/orgs",
+      "repos_url": "https://api.github.com/users/uazo/repos",
+      "events_url": "https://api.github.com/users/uazo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/uazo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "web-flow",
+      "id": 19864447,
+      "node_id": "MDQ6VXNlcjE5ODY0NDQ3",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19864447?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/web-flow",
+      "html_url": "https://github.com/web-flow",
+      "followers_url": "https://api.github.com/users/web-flow/followers",
+      "following_url": "https://api.github.com/users/web-flow/following{/other_user}",
+      "gists_url": "https://api.github.com/users/web-flow/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/web-flow/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/web-flow/subscriptions",
+      "organizations_url": "https://api.github.com/users/web-flow/orgs",
+      "repos_url": "https://api.github.com/users/web-flow/repos",
+      "events_url": "https://api.github.com/users/web-flow/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/web-flow/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "10da9add1032274cee33f4fc61815cace9ecd831",
+        "url": "https://api.github.com/repos/bromite/bromite/commits/10da9add1032274cee33f4fc61815cace9ecd831",
+        "html_url": "https://github.com/bromite/bromite/commit/10da9add1032274cee33f4fc61815cace9ecd831"
+      },
+      {
+        "sha": "3884e3d7332f37895900e1c00ef928eb9e46ede5",
+        "url": "https://api.github.com/repos/bromite/bromite/commits/3884e3d7332f37895900e1c00ef928eb9e46ede5",
+        "html_url": "https://github.com/bromite/bromite/commit/3884e3d7332f37895900e1c00ef928eb9e46ede5"
+      }
+    ]
+  },
+  {
+    "sha": "170ecd886cd2faf804a516c682f4e4646b29e28a",
+    "node_id": "C_kwDOD15akdoAKDE3MGVjZDg4NmNkMmZhZjgwNGE1MTZjNjgyZjRlNDY0NmIyOWUyOGE",
+    "commit": {
+      "author": {
+        "name": "Carmelo Messina",
+        "email": "carmelo.messina@outlook.com",
+        "date": "2021-10-12T15:18:53Z"
+      },
+      "committer": {
+        "name": "Carmelo Messina",
+        "email": "carmelo.messina@outlook.com",
+        "date": "2021-10-12T15:18:53Z"
+      },
+      "message": "version check rather than build time",
+      "tree": {
+        "sha": "1b0210ca0f7b3c7466e297f2e1fde80a84eb1f07",
+        "url": "https://api.github.com/repos/bromite/bromite/git/trees/1b0210ca0f7b3c7466e297f2e1fde80a84eb1f07"
+      },
+      "url": "https://api.github.com/repos/bromite/bromite/git/commits/170ecd886cd2faf804a516c682f4e4646b29e28a",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null
+      }
+    },
+    "url": "https://api.github.com/repos/bromite/bromite/commits/170ecd886cd2faf804a516c682f4e4646b29e28a",
+    "html_url": "https://github.com/bromite/bromite/commit/170ecd886cd2faf804a516c682f4e4646b29e28a",
+    "comments_url": "https://api.github.com/repos/bromite/bromite/commits/170ecd886cd2faf804a516c682f4e4646b29e28a/comments",
+    "author": {
+      "login": "uazo",
+      "id": 29201891,
+      "node_id": "MDQ6VXNlcjI5MjAxODkx",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29201891?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/uazo",
+      "html_url": "https://github.com/uazo",
+      "followers_url": "https://api.github.com/users/uazo/followers",
+      "following_url": "https://api.github.com/users/uazo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/uazo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/uazo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/uazo/subscriptions",
+      "organizations_url": "https://api.github.com/users/uazo/orgs",
+      "repos_url": "https://api.github.com/users/uazo/repos",
+      "events_url": "https://api.github.com/users/uazo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/uazo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "uazo",
+      "id": 29201891,
+      "node_id": "MDQ6VXNlcjI5MjAxODkx",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29201891?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/uazo",
+      "html_url": "https://github.com/uazo",
+      "followers_url": "https://api.github.com/users/uazo/followers",
+      "following_url": "https://api.github.com/users/uazo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/uazo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/uazo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/uazo/subscriptions",
+      "organizations_url": "https://api.github.com/users/uazo/orgs",
+      "repos_url": "https://api.github.com/users/uazo/repos",
+      "events_url": "https://api.github.com/users/uazo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/uazo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "5dbc455710f376602e5e4ce47a11202587dd0f9a",
+        "url": "https://api.github.com/repos/bromite/bromite/commits/5dbc455710f376602e5e4ce47a11202587dd0f9a",
+        "html_url": "https://github.com/bromite/bromite/commit/5dbc455710f376602e5e4ce47a11202587dd0f9a"
+      }
+    ]
+  },
+  {
+    "sha": "1032db84cfbd8963e17140929bd1c4a991755432",
+    "node_id": "C_kwDOD15akdoAKDEwMzJkYjg0Y2ZiZDg5NjNlMTcxNDA5MjliZDFjNGE5OTE3NTU0MzI",
+    "commit": {
+      "author": {
+        "name": "Carmelo Messina",
+        "email": "carmelo.messina@outlook.com",
+        "date": "2021-10-12T15:20:36Z"
+      },
+      "committer": {
+        "name": "Carmelo Messina",
+        "email": "carmelo.messina@outlook.com",
+        "date": "2021-10-12T15:20:36Z"
+      },
+      "message": "fixup with Disable-Omaha-update-checks.patch",
+      "tree": {
+        "sha": "03ba7b07b3a9fcde40fb2a7041d4290a9601f6ad",
+        "url": "https://api.github.com/repos/bromite/bromite/git/trees/03ba7b07b3a9fcde40fb2a7041d4290a9601f6ad"
+      },
+      "url": "https://api.github.com/repos/bromite/bromite/git/commits/1032db84cfbd8963e17140929bd1c4a991755432",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null
+      }
+    },
+    "url": "https://api.github.com/repos/bromite/bromite/commits/1032db84cfbd8963e17140929bd1c4a991755432",
+    "html_url": "https://github.com/bromite/bromite/commit/1032db84cfbd8963e17140929bd1c4a991755432",
+    "comments_url": "https://api.github.com/repos/bromite/bromite/commits/1032db84cfbd8963e17140929bd1c4a991755432/comments",
+    "author": {
+      "login": "uazo",
+      "id": 29201891,
+      "node_id": "MDQ6VXNlcjI5MjAxODkx",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29201891?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/uazo",
+      "html_url": "https://github.com/uazo",
+      "followers_url": "https://api.github.com/users/uazo/followers",
+      "following_url": "https://api.github.com/users/uazo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/uazo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/uazo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/uazo/subscriptions",
+      "organizations_url": "https://api.github.com/users/uazo/orgs",
+      "repos_url": "https://api.github.com/users/uazo/repos",
+      "events_url": "https://api.github.com/users/uazo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/uazo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "uazo",
+      "id": 29201891,
+      "node_id": "MDQ6VXNlcjI5MjAxODkx",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29201891?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/uazo",
+      "html_url": "https://github.com/uazo",
+      "followers_url": "https://api.github.com/users/uazo/followers",
+      "following_url": "https://api.github.com/users/uazo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/uazo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/uazo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/uazo/subscriptions",
+      "organizations_url": "https://api.github.com/users/uazo/orgs",
+      "repos_url": "https://api.github.com/users/uazo/repos",
+      "events_url": "https://api.github.com/users/uazo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/uazo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "170ecd886cd2faf804a516c682f4e4646b29e28a",
+        "url": "https://api.github.com/repos/bromite/bromite/commits/170ecd886cd2faf804a516c682f4e4646b29e28a",
+        "html_url": "https://github.com/bromite/bromite/commit/170ecd886cd2faf804a516c682f4e4646b29e28a"
+      }
+    ]
+  },
+  {
+    "sha": "f8039001aed89a28fcd4830f2278ab46bec01009",
+    "node_id": "C_kwDOD15akdoAKGY4MDM5MDAxYWVkODlhMjhmY2Q0ODMwZjIyNzhhYjQ2YmVjMDEwMDk",
+    "commit": {
+      "author": {
+        "name": "Carmelo Messina",
+        "email": "carmelo.messina@outlook.com",
+        "date": "2021-10-14T12:00:18Z"
+      },
+      "committer": {
+        "name": "Carmelo Messina",
+        "email": "carmelo.messina@outlook.com",
+        "date": "2021-10-14T12:00:18Z"
+      },
+      "message": "taking the last-modified together with the redirect.\n\nthe check between build times in any case is currently commented (see isNewVersionAvailableByBuildTime)",
+      "tree": {
+        "sha": "51144f2aff4fcc3c1861503126756164553ad319",
+        "url": "https://api.github.com/repos/bromite/bromite/git/trees/51144f2aff4fcc3c1861503126756164553ad319"
+      },
+      "url": "https://api.github.com/repos/bromite/bromite/git/commits/f8039001aed89a28fcd4830f2278ab46bec01009",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null
+      }
+    },
+    "url": "https://api.github.com/repos/bromite/bromite/commits/f8039001aed89a28fcd4830f2278ab46bec01009",
+    "html_url": "https://github.com/bromite/bromite/commit/f8039001aed89a28fcd4830f2278ab46bec01009",
+    "comments_url": "https://api.github.com/repos/bromite/bromite/commits/f8039001aed89a28fcd4830f2278ab46bec01009/comments",
+    "author": {
+      "login": "uazo",
+      "id": 29201891,
+      "node_id": "MDQ6VXNlcjI5MjAxODkx",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29201891?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/uazo",
+      "html_url": "https://github.com/uazo",
+      "followers_url": "https://api.github.com/users/uazo/followers",
+      "following_url": "https://api.github.com/users/uazo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/uazo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/uazo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/uazo/subscriptions",
+      "organizations_url": "https://api.github.com/users/uazo/orgs",
+      "repos_url": "https://api.github.com/users/uazo/repos",
+      "events_url": "https://api.github.com/users/uazo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/uazo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "uazo",
+      "id": 29201891,
+      "node_id": "MDQ6VXNlcjI5MjAxODkx",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29201891?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/uazo",
+      "html_url": "https://github.com/uazo",
+      "followers_url": "https://api.github.com/users/uazo/followers",
+      "following_url": "https://api.github.com/users/uazo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/uazo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/uazo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/uazo/subscriptions",
+      "organizations_url": "https://api.github.com/users/uazo/orgs",
+      "repos_url": "https://api.github.com/users/uazo/repos",
+      "events_url": "https://api.github.com/users/uazo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/uazo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "1032db84cfbd8963e17140929bd1c4a991755432",
+        "url": "https://api.github.com/repos/bromite/bromite/commits/1032db84cfbd8963e17140929bd1c4a991755432",
+        "html_url": "https://github.com/bromite/bromite/commit/1032db84cfbd8963e17140929bd1c4a991755432"
+      }
+    ]
+  },
+  {
+    "sha": "acfa2a7b832f79755cb767410a8bf37872867bec",
+    "node_id": "C_kwDOD15akdoAKGFjZmEyYTdiODMyZjc5NzU1Y2I3Njc0MTBhOGJmMzc4NzI4NjdiZWM",
+    "commit": {
+      "author": {
+        "name": "Carmelo Messina",
+        "email": "carmelo.messina@outlook.com",
+        "date": "2021-10-15T11:52:35Z"
+      },
+      "committer": {
+        "name": "Carmelo Messina",
+        "email": "carmelo.messina@outlook.com",
+        "date": "2021-10-15T11:52:35Z"
+      },
+      "message": "removed code related to build time check",
+      "tree": {
+        "sha": "71f1859a23d8b9a55ac90eee3f79b32d295cd868",
+        "url": "https://api.github.com/repos/bromite/bromite/git/trees/71f1859a23d8b9a55ac90eee3f79b32d295cd868"
+      },
+      "url": "https://api.github.com/repos/bromite/bromite/git/commits/acfa2a7b832f79755cb767410a8bf37872867bec",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null
+      }
+    },
+    "url": "https://api.github.com/repos/bromite/bromite/commits/acfa2a7b832f79755cb767410a8bf37872867bec",
+    "html_url": "https://github.com/bromite/bromite/commit/acfa2a7b832f79755cb767410a8bf37872867bec",
+    "comments_url": "https://api.github.com/repos/bromite/bromite/commits/acfa2a7b832f79755cb767410a8bf37872867bec/comments",
+    "author": {
+      "login": "uazo",
+      "id": 29201891,
+      "node_id": "MDQ6VXNlcjI5MjAxODkx",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29201891?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/uazo",
+      "html_url": "https://github.com/uazo",
+      "followers_url": "https://api.github.com/users/uazo/followers",
+      "following_url": "https://api.github.com/users/uazo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/uazo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/uazo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/uazo/subscriptions",
+      "organizations_url": "https://api.github.com/users/uazo/orgs",
+      "repos_url": "https://api.github.com/users/uazo/repos",
+      "events_url": "https://api.github.com/users/uazo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/uazo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "uazo",
+      "id": 29201891,
+      "node_id": "MDQ6VXNlcjI5MjAxODkx",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29201891?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/uazo",
+      "html_url": "https://github.com/uazo",
+      "followers_url": "https://api.github.com/users/uazo/followers",
+      "following_url": "https://api.github.com/users/uazo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/uazo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/uazo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/uazo/subscriptions",
+      "organizations_url": "https://api.github.com/users/uazo/orgs",
+      "repos_url": "https://api.github.com/users/uazo/repos",
+      "events_url": "https://api.github.com/users/uazo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/uazo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "f8039001aed89a28fcd4830f2278ab46bec01009",
+        "url": "https://api.github.com/repos/bromite/bromite/commits/f8039001aed89a28fcd4830f2278ab46bec01009",
+        "html_url": "https://github.com/bromite/bromite/commit/f8039001aed89a28fcd4830f2278ab46bec01009"
+      }
+    ]
+  }
+]

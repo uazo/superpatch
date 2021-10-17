@@ -28,7 +28,7 @@
     window.fetch = function (resource, init) {
       if (resource.includes('blazor.boot.json')) {
         if (window.location.origin === 'https://uazo.github.io') {
-          resource = window.location.origin + '/_framework/blazor.boot.json';
+          resource = window.location.origin + '/superpatch/_framework/blazor.boot.json';
         }
       }
       window.fetch = oldFetch;

@@ -17,7 +17,9 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Clone publish
-        run: git clone --depth 1 --branch publish https://github.com/uazo/superpatch out/wwwroot
+        run: |
+          git clone --depth 1 --branch publish https://github.com/uazo/superpatch out/wwwroot
+          git -C out/wwwroot/ rm -rf .
 
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v1.8.2

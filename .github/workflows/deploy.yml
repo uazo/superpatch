@@ -43,4 +43,5 @@ jobs:
           base: publish
           path: out/wwwroot
           delete-branch: true
+          branch-suffix: short-commit-hash
           

@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace SuperPatch.Core.Status
 {
+  public class NoopStatusDelegate : StatusDelegate
+  {
+  }
+
   public class StatusDelegate
   {
     public Func<string, Task> OnChangedAsync { get; set; }

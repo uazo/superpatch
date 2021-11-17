@@ -43,14 +43,20 @@ namespace SuperPatch.Core
           {
             var contents = (await Storage.GetPatchAsync(patchFileName))
                               .Split('\n')
-                              .Where(x => x != "-- ") // TODO: fix me
-                              .Where(x => x != "2.17.1")
+                              .Where(x => !IsLineToRemove(x))
                               .ToList();
             return DiffPatch.DiffParserHelper.Parse(String.Join('\n', contents));
           }
         };
         PatchsSet.Add(patchFile);
       }
+    }
+
+    public static bool IsLineToRemove( string line)
+    {
+      return line == "-- " ||
+             line == "2.17.1" ||
+             line == "2.20.1";
     }
 
     public async Task EnsureLoadAllPatches(Status.StatusDelegate status)

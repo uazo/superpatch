@@ -44,6 +44,21 @@ namespace SuperPatch.Core.GitHubApi
     public string sha { get; set; }
   }
 
+  public class PullRequestFile
+  {
+    public string sha { get; set; }
+    public string filename { get; set; }
+    public string contents_url { get; set; }
+  }
+
+  public class PullRequestFileContents
+  {
+    public string sha { get; set; }
+    public string name { get; set; }
+    public string path { get; set; }
+    public string download_url { get; set; }
+  }
+
   public class PullRequest
   {
     public string url { get; set; }

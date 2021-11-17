@@ -20,7 +20,7 @@ namespace SuperPatch.Core
 
     public string FileName { get; set; }
 
-    internal Func<Task<IEnumerable<FileDiff>>> LoadDelegate { get; set; }
+    public Func<Task<IEnumerable<FileDiff>>> LoadDelegate { get; set; }
 
     public IEnumerable<FileDiff> Diff { get; set; }
 

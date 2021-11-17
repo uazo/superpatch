@@ -66,6 +66,37 @@ namespace SuperPatch.Core.GitHubApi
       }
     }
 
+    public async Task<List<PullRequestFile>> GetPullRequestFiles(string repo, int pullId)
+    {
+      try
+      {
+        var result = await httpClient.GetFromJsonAsync<List<PullRequestFile>>(
+          $"https://api.github.com/repos/{repo}/pulls/{pullId}/files");
+        return result;
+      }
+      catch
+      {
+        // TODO:
+        // 422(Unprocessable Entity)
+        return null;
+      }
+    }
+
+    public async Task<PullRequestFileContents> GetPullRequestFiles(PullRequestFile file)
+    {
+      try
+      {
+        var result = await httpClient.GetFromJsonAsync<PullRequestFileContents>(file.contents_url);
+        return result;
+      }
+      catch
+      {
+        // TODO:
+        // 422(Unprocessable Entity)
+        return null;
+      }
+    }
+
     public async Task<List<PullRequestCommitResponse>> GetCommitsForPull(string pullurl)
     {
       try

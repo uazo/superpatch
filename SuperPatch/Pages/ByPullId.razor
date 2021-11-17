@@ -53,7 +53,36 @@ else
         if (result.IsOk == false)
           errorString = result.Message;
         else
+        {
           workspace = result.Result;
+
+          var files = await githubApi.GetPullRequestFiles("bromite/bromite", PullIdFromUrl);
+          workspace.PatchsSet.AddRange(files.Select(x => new PatchFile()
+          {
+            FileName = System.IO.Path.GetFileName(x.filename),
+            Diff = null,
+            LoadDelegate = async () =>
+            {
+              try
+              {
+                var fileContents = await githubApi.GetPullRequestFiles(x);
+
+                var contents = (await httpClient.GetStringAsync(fileContents.download_url))
+                                .Split('\n')
+                                .Where(x => !Workspace.IsLineToRemove(x))
+                                .ToList();
+                return DiffPatch.DiffParserHelper.Parse(String.Join('\n', contents));
+              }
+              catch (System.Exception ex)
+              {
+                Console.WriteLine(ex.Message);
+                return null;
+              }
+            }
+          }).ToList());
+
+          await workspace.EnsureLoadAllPatches(new SuperPatch.Core.Status.NoopStatusDelegate());
+        }
 
         this.StateHasChanged();
 

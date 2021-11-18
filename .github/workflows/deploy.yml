@@ -24,8 +24,11 @@ jobs:
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v1.8.2
 
-      - name: Build & Publish
-        run: dotnet publish -c Release -o out
+      - name: Build & Publish (www)
+        run: dotnet publish -c Release -o out SuperPatch/SuperPatch.csproj
+
+      - name: Build & Publish (bin)
+        run: dotnet publish -c Release -o bin SuperPatchUtils/SuperPatchUtils.csproj
 
       # changes the base-tag in index.html from '/' to 'BlazorGitHubPagesDemo' to match GitHub Pages repository subdirectory
       - name: Change base-tag in index.html from / to superpatch
@@ -46,4 +49,9 @@ jobs:
           path: out/wwwroot
           delete-branch: true
           branch-suffix: short-commit-hash
-          
+
+      - name: Publish bin
+        uses: actions/upload-artifact@v2
+        with:
+          name: SuperPatchUtils
+          path: bin

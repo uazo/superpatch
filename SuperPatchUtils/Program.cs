@@ -3,39 +3,92 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using DiffPatch.Data;
+using System.CommandLine;
+using System.CommandLine.Invocation;
+using System.CommandLine.IO;
+using System.Reflection;
+using System.Threading;
 
+using DiffPatch.Data;
 using SuperPatch.Core;
 using SuperPatch.Core.Storages;
 
 namespace SuperPatchUtils
 {
-  class Program
+  static class Program
   {
-    static void Main(string[] args)
+    static async Task<int> Main(string[] args)
     {
-      MainAsync(args).GetAwaiter().GetResult();
+      var cmd = new RootCommand
+      {
+        new Command("download")
+        {
+          new Argument<string>("commitshaortag", "Commit hash"),
+          new Argument<string>("outputdir", "The output directory"),
+          new Option("--verbose", "Verbose mode"),
+        }.WithHandler(nameof(DownloadAsync))
+      };
+
+      return await cmd.InvokeAsync(args);
     }
 
-    static async Task MainAsync(string[] args)
+    private static Command WithHandler(this Command command, string methodName)
     {
-      string CacheDirectory = @"C:\Progetti\Uazo\DiffPath\SuperPatch\wwwroot\workspaces";
-      await PrepareCacheAsync(CacheDirectory, "92.0.4515.176");
-      await PrepareCacheAsync(CacheDirectory, "93.0.4577.83");
+      var method = typeof(Program).GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Static);
+      var handler = CommandHandler.Create(method!);
+      command.Handler = handler;
+      return command;
+    }
 
-      //DownloadSources(wrk);
+    static async Task<int> DownloadAsync(
+      string commitshaortag, string outputdir, bool Verbose, 
+      IConsole console, CancellationToken cancellationToken)
+    {
+      var wrk = new Workspace()
+      {
+        CommitShaOrTag = commitshaortag
+      };
+      wrk.Storage = new BromiteRemoteStorage(wrk, new System.Net.Http.HttpClient());
+      await wrk.EnsureLoadPatchesOrderAsync();
 
-      //var xx = System.Text.Json.JsonSerializer.Serialize(wrk);
-      //System.IO.File.WriteAllText(
-      //  System.IO.Path.Combine(CacheDirectory, "wrk.json"),
-      //  xx);
+      await wrk.EnsureLoadAllPatches(new SuperPatch.Core.Status.NoopStatusDelegate());
 
-      //var yy = System.Text.Json.JsonSerializer.Deserialize<Workspace>(xx);
+      var allFiles = wrk.PatchsSet
+                        .Where(x => x != null)
+                        .SelectMany(x => x.Diff)
+                        .Where(x => x != null)
+                        .ToList();
 
-      //foreach (var p in wrk.PatchsSet)
-      //{
-      //  var PatchView = await PatchViewBuilder.BuildAsync(wrk, p);
-      //} 
+      // remove new files from download
+      allFiles = allFiles
+                      .Where(x => x != null && x.From != "/dev/null")
+                      .GroupBy(x => x.From)
+                      .Select( x=> x.FirstOrDefault())
+                      .ToList();
+
+      var failed = new List<FileDiff>();
+      allFiles.AsParallel().ForAll(async (file) =>
+      {
+        try
+        {
+          string content = await wrk.Storage.GetFileAsync(file);
+
+          string filePath = System.IO.Path.Combine(outputdir, 
+            file.From.Replace('/', System.IO.Path.DirectorySeparatorChar));
+
+          string directory = System.IO.Path.GetDirectoryName(filePath);
+          if (System.IO.Directory.Exists(directory) == false)
+            System.IO.Directory.CreateDirectory(directory);
+
+          System.IO.File.WriteAllText(filePath, content);
+        }
+        catch (System.Exception ex)
+        {
+          failed.Add(file);
+        }
+      });
+
+      return 0;
     }
 
     private static async Task PrepareCacheAsync(string cacheDirectory, string CommitShaOrTag)
@@ -53,43 +106,5 @@ namespace SuperPatchUtils
         System.IO.Path.Combine(cacheDirectory, wrkFileName),
         json);
     }
-
-    //private static async Task DownloadSourcesAsync(Workspace workspace)
-    //{
-    //  var allFiles = workspace.PatchsSet
-    //                       .Where(x => x != null)
-    //                       .SelectMany(x => x.Diff)
-    //                       .Where(x => x != null)
-    //                       .Select(x => x.From)
-    //                       .ToList();
-
-    //  // TODO: fix it
-    //  allFiles = workspace.PatchsSet
-    //                       .Where(x => x != null)
-    //                       .SelectMany(x => x.Diff)
-    //                       .Where(x => x != null && x.Type == FileChangeType.Modified && x.From == null)
-    //                       .Select(x => x.To)
-    //                       .Union(allFiles)
-    //                       .ToList();
-
-    //  allFiles = allFiles
-    //                  .Where(x => x != null && x != "/dev/null")
-    //                  .Distinct().ToList();
-
-    //  // TODO: remove new files from download
-    //  var failed = new List<string>();
-    //  allFiles.AsParallel().ForAll(async (file) =>
-    //  {
-    //    try
-    //    {
-    //      string content = await workspace.Storage.GetPatchAsync(file);
-    //      //workspace.Storage.Download(file);
-    //    }
-    //    catch (System.Exception ex)
-    //    {
-    //      failed.Add(file);
-    //    }
-    //  });
-    //}
   }
 }

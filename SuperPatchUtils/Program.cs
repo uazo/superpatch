@@ -67,10 +67,13 @@ namespace SuperPatchUtils
                       .ToList();
 
       var failed = new List<FileDiff>();
-      allFiles.AsParallel().ForAll(async (file) =>
+      
+      foreach( var file in allFiles)
       {
         try
         {
+          Console.WriteLine($"Downloading {file.From}");
+
           string content = await wrk.Storage.GetFileAsync(file);
 
           string filePath = System.IO.Path.Combine(outputdir, 
@@ -82,12 +85,13 @@ namespace SuperPatchUtils
 
           System.IO.File.WriteAllText(filePath, content);
         }
-        catch // (System.Exception ex)
+        catch(System.Exception ex)
         {
+          Console.WriteLine(ex.Message);
           failed.Add(file);
           throw;
         }
-      });
+      }
 
       return 0;
     }

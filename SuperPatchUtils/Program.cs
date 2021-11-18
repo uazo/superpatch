@@ -82,9 +82,10 @@ namespace SuperPatchUtils
 
           System.IO.File.WriteAllText(filePath, content);
         }
-        catch (System.Exception ex)
+        catch // (System.Exception ex)
         {
           failed.Add(file);
+          throw;
         }
       });
 

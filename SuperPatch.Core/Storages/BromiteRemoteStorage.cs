@@ -27,7 +27,15 @@ namespace SuperPatch.Core.Storages
 
     public override async Task<string> GetPatchAsync(string filename)
     {
-      return await http.GetStringAsync($"{PatchSourceUrl}/{workspace.CommitShaOrTag}/build/patches/{filename}");
+      try
+      {
+        return await http.GetStringAsync($"{PatchSourceUrl}/{workspace.CommitShaOrTag}/build/patches/{filename}");
+      }
+      catch
+      {
+        // file removed
+        return string.Empty;
+      }
     }
 
     public override async Task<string> GetPatchesListAsync()

@@ -1,0 +1,85 @@
+﻿@page "/bromite/byurl/{CommitHashFromUrl}"
+
+@inherits CommonComponentBase
+
+@inject HttpClient httpClient
+@inject Services.UrlCleaner urlCleaner
+@inject Core.Services.WorkspaceService workspaceService
+@inject NavigationManager navigationManager
+
+@code {
+  [Parameter]
+  public string CommitHashFromUrl { get; set; }
+
+  [Parameter]
+  public string FileUri { get; set; }
+}
+
+@if (workspace == null)
+{
+  if (errorString == null)
+  {
+    <Spin></Spin>
+  }
+  else
+  {
+    <h3>@errorString</h3>
+  }
+}
+else
+{
+  <CommitViewer Workspace="workspace"></CommitViewer>
+}
+
+@code {
+
+  Workspace workspace;
+  string errorString;
+
+  protected override async Task OnInitializedAsync()
+  {
+    var sha = urlCleaner.RestoreFromUrl(CommitHashFromUrl);
+    if (sha == null) sha = "master";
+
+    var uriParams = System.Web.HttpUtility.ParseQueryString(new Uri(navigationManager.Uri).Query);
+    FileUri = uriParams["url"];
+
+    var result = await workspaceService.LoadBySha(sha);
+    if (result.IsOk == false)
+      errorString = result.Message;
+    else
+      workspace = result.Result;
+
+    if (workspace != null)
+    {
+      workspace.PatchsSet.Add(new PatchFile()
+      {
+        FileName = System.IO.Path.GetFileName(FileUri),
+        Diff = null,
+        LoadDelegate = async () =>
+        {
+          try
+          {
+            Console.WriteLine($"Loading {FileUri}");
+            var contents = (await httpClient.GetStringAsync(FileUri))
+                            .Split('\n')
+                            .Where(x => !Workspace.IsLineToRemove(x))
+                            .ToList();
+            return DiffPatch.DiffParserHelper.Parse(String.Join('\n', contents));
+          }
+          catch (System.Exception ex)
+          {
+            Console.WriteLine(ex.Message);
+            return null;
+          }
+        }
+      });
+
+      await workspace.EnsureLoadAllPatches(new SuperPatch.Core.Status.NoopStatusDelegate());
+    }
+
+    this.StateHasChanged();
+
+    base.OnInitialized();
+  }
+}

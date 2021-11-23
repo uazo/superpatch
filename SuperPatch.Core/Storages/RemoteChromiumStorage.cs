@@ -12,8 +12,7 @@ namespace SuperPatch.Core.Storages
   {
     protected HttpClient http { get; private set; }
 
-    protected abstract string FileSourceUrl { get; }
-    protected abstract string PatchSourceUrl { get; }
+    protected virtual string FileSourceUrl => @"https://raw.githubusercontent.com/chromium/chromium";
 
     protected string ChromiumCommit { get; set; }
 

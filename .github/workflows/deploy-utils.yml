@@ -32,4 +32,4 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           draft: true
-          files: Release/*
+          files: bin/*

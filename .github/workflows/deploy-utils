@@ -1,0 +1,35 @@
+name: Deploy-Utils
+
+on:
+#  push:
+#    branches: [ master ]
+#  pull_request:
+#    branches: [ master ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v1.8.2
+
+      - name: Build & Publish (bin)
+        run: dotnet publish -c Release -o bin SuperPatchUtils/SuperPatchUtils.csproj
+
+      - name: Publish bin
+        uses: actions/upload-artifact@v2
+        with:
+          name: SuperPatchUtils
+          path: bin
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          files: Release/*

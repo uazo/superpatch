@@ -26,7 +26,7 @@ namespace SuperPatchUtils.Commands
           new Argument<string>("repodir", "Bromite repo local directory"),
           new Argument<string>("outputdir", "The output directory"),
           new Option("--verbose", "Verbose mode"),
-        }.WithHandler(nameof(Commands.LocalRepo.DownloadAsync)),
+        }.WithHandler(typeof(LocalRepo), nameof(Commands.LocalRepo.DownloadAsync)),
       };
     }
 

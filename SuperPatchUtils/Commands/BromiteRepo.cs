@@ -22,7 +22,7 @@ namespace SuperPatchUtils.Commands
           new Argument<string>("commitshaortag", "Bromite Commit hash"),
           new Argument<string>("outputdir", "The output directory"),
           new Option("--verbose", "Verbose mode"),
-        }.WithHandler(nameof(Commands.BromiteRepo.DownloadAsync))
+        }.WithHandler(typeof(BromiteRepo), nameof(Commands.BromiteRepo.DownloadAsync))
       };
     }
 

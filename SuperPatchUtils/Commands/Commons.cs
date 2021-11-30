@@ -22,18 +22,25 @@ namespace SuperPatchUtils.Commands
       {
         try
         {
-          Console.WriteLine($"Downloading {file.From}");
-
-          string content = await wrk.Storage.GetFileAsync(file);
-
           string filePath = System.IO.Path.Combine(outputdir,
             file.From.Replace('/', System.IO.Path.DirectorySeparatorChar));
 
-          string directory = System.IO.Path.GetDirectoryName(filePath);
-          if (System.IO.Directory.Exists(directory) == false)
-            System.IO.Directory.CreateDirectory(directory);
+          if (System.IO.File.Exists(filePath))
+          {
+            Console.WriteLine($"File already exists {file.From}");
+          }
+          else
+          {
+            Console.WriteLine($"Downloading {file.From}");
 
-          System.IO.File.WriteAllText(filePath, content);
+            string content = await wrk.Storage.GetFileAsync(file);
+
+            string directory = System.IO.Path.GetDirectoryName(filePath);
+            if (System.IO.Directory.Exists(directory) == false)
+              System.IO.Directory.CreateDirectory(directory);
+
+            System.IO.File.WriteAllText(filePath, content);
+          }
         }
         catch (System.Exception ex)
         {
@@ -43,9 +50,9 @@ namespace SuperPatchUtils.Commands
         }
       }
     }
-    public static Command WithHandler(this Command command, string methodName)
+    public static Command WithHandler(this Command command, Type ClassType, string methodName)
     {
-      var method = typeof(Program).GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Static);
+      var method = ClassType.GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Static);
       var handler = CommandHandler.Create(method!);
       command.Handler = handler;
       return command;

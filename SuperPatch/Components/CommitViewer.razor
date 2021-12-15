@@ -211,7 +211,8 @@
 
   private async void OnSelectedItemsChangedHandlerAsync(IEnumerable<PatchFile> values)
   {
-    ViewerModel.CurrentSelectedPatches = values;
+    var v = values.ToList();
+    ViewerModel.CurrentSelectedPatches = v;
     ViewerModel.File = null;
 
     await PrepareView();
@@ -229,6 +230,8 @@
 
   private void PrepareFoldersModel()
   {
+    ViewerModel.CurrentPatchView.UpdateFiles();
+
     var root = new Node<FilePatchedContents>();
     var files = ViewerModel.CurrentPatchView.Files.ToList();
     if( ViewerModel.CompareWithPatchView != null)
@@ -294,6 +297,7 @@
       ViewerModel.File.OriginalContents = compareFile;
     }
 
+    PrepareFoldersModel();
     this.StateHasChanged();
   }
 

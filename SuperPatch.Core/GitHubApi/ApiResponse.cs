@@ -19,6 +19,26 @@ namespace SuperPatch.Core.GitHubApi
   public class Commit
   {
     public string message { get; set; }
+    public Tree tree { get; set; }
+
+  }
+
+  public class Tree
+  {
+    public string sha { get; set; }
+    public string url { get; set; }
+    public TreeItem[] tree { get; set; }
+  }
+
+  public class TreeItem
+  {
+    public string path { get; set; }
+    public string type { get; set; } // tree, blob
+    public string sha { get; set; }
+    public string url { get; set; }
+
+    internal bool isTree() => type == "tree";
+    internal bool isBlob() => type == "blob";
   }
 
   // response for

@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DiffPatch.Data;
 
-namespace SuperPatch.Core.Storages
+namespace SuperPatch.Core.Storages.Bromite
 {
   public class BromiteLocalStorage : BromiteStorage
   {

@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SuperPatch.Core.Storages
+namespace SuperPatch.Core.Storages.Bromite
 {
   public class BromiteRemoteStorage : BromiteStorage
   {

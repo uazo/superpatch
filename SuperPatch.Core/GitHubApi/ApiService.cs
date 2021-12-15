@@ -97,7 +97,39 @@ namespace SuperPatch.Core.GitHubApi
       }
     }
 
-    public async Task<List<PullRequestCommitResponse>> GetCommitsForPull(string pullurl)
+    public async Task<Tree> GetTreesAsync(Workspace wrk, string commitShaOrTag, bool recursive)
+    {
+      try
+      {
+        var commit = await CommitForSha(wrk, commitShaOrTag);
+        var treeUrl = commit.commit.tree.url + (recursive ? "?recursive=1" : "");
+        var tree = await GetTreesAsync(treeUrl);
+        return tree;
+      }
+      catch
+      {
+        // TODO:
+        // 422(Unprocessable Entity)
+        return null;
+      }
+    }
+
+    public async Task<Tree> GetTreesAsync(string treeUrl)
+    {
+      try
+      {
+        var result = await httpClient.GetFromJsonAsync<Tree>(treeUrl);
+        return result;
+      }
+      catch
+      {
+        // TODO:
+        // 422(Unprocessable Entity)
+        return null;
+      }
+    }
+
+  public async Task<List<PullRequestCommitResponse>> GetCommitsForPull(string pullurl)
     {
       try
       {

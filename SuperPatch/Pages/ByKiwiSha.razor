@@ -1,4 +1,4 @@
-﻿@page "/bromite/commit/{CommitHashFromUrl}"
+﻿@page "/kiwi/commit/{CommitHashFromUrl}"
 
 @inherits CommonComponentBase
 
@@ -35,9 +35,9 @@ else
   protected override async Task OnInitializedAsync()
   {
     var sha = urlCleaner.RestoreFromUrl(CommitHashFromUrl);
-    if (sha == null) sha = "master";
+    if (sha == null) sha = "kiwi";
 
-    var result = await workspaceService.LoadBySha(Core.Services.RepoType.Bromite, sha);
+    var result = await workspaceService.LoadBySha(Core.Services.RepoType.Kiwi, sha);
     if (result.IsOk == false)
       errorString = result.Message;
     else

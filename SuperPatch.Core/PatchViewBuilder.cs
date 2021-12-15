@@ -13,6 +13,28 @@ namespace SuperPatch.Core
     public Workspace Workspace { get; set; }
     public IEnumerable<PatchFile> CurrentPatchs { get; set; }
     public List<FilePatchedContents> Files { get; set; }
+
+    public void UpdateFiles()
+    {
+      Files = new List<FilePatchedContents>();
+      foreach (var currentPatch in CurrentPatchs)
+      {
+        if (currentPatch.Status == PatchStatus.Loaded)
+        {
+          foreach (var file in currentPatch.Diff)
+          {
+            var content = new FilePatchedContents()
+            {
+              FileName = file.Type == DiffPatch.Data.FileChangeType.Add ? file.To : file.From,
+              ChangeType = file.Type,
+              Status = FileContentsStatus.NotLoaded,
+              Diff = file
+            };
+            Files.Add(content);
+          }
+        }
+      }
+    }
   }
 
   public class FilePatchedContents : FileContents
@@ -34,26 +56,7 @@ namespace SuperPatch.Core
         Workspace = wrk,
         CurrentPatchs = patchFiles
       };
-
-      view.Files = new List<FilePatchedContents>();
-      foreach (var currentPatch in view.CurrentPatchs)
-      {
-        if (currentPatch.Status == PatchStatus.Loaded)
-        {
-          foreach (var file in currentPatch.Diff)
-          {
-            var content = new FilePatchedContents()
-            {
-              FileName = file.Type == DiffPatch.Data.FileChangeType.Add ? file.To : file.From,
-              ChangeType = file.Type,
-              Status = FileContentsStatus.NotLoaded,
-              Diff = file
-            };
-            view.Files.Add(content);
-          }
-        }
-      }
-
+      view.UpdateFiles();
       return view;
     }
 
@@ -87,7 +90,7 @@ namespace SuperPatch.Core
             if (file.FileName == diff.To)
             {
               string patched;
-              patched = DiffPatch.PatchHelper.Patch(file.Contents, diff.Chunks, "\n");
+              patched = await view.Workspace.Storage.ApplyPatchAsync(file, diff);
 
               if (view.CurrentPatchs.Contains(patch))
               {

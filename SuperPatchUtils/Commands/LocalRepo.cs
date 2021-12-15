@@ -12,6 +12,7 @@ using System.Threading;
 using DiffPatch.Data;
 using SuperPatch.Core;
 using SuperPatch.Core.Storages;
+using SuperPatch.Core.Storages.Bromite;
 
 namespace SuperPatchUtils.Commands
 {

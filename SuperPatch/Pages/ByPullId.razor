@@ -49,7 +49,7 @@ else
       }
       else
       {
-        var result = await workspaceService.LoadBySha(pull.head.sha);
+        var result = await workspaceService.LoadBySha(Core.Services.RepoType.Bromite, pull.head.sha);
         if (result.IsOk == false)
           errorString = result.Message;
         else
@@ -57,15 +57,15 @@ else
           workspace = result.Result;
 
           var files = await githubApi.GetPullRequestFiles("bromite/bromite", PullIdFromUrl);
-          workspace.PatchsSet.AddRange(files.Select(x => new PatchFile()
+          workspace.PatchsSet.AddRange(files.Select(pullRequestFile => new PatchFile()
           {
-            FileName = System.IO.Path.GetFileName(x.filename),
+            FileName = System.IO.Path.GetFileName(pullRequestFile.filename),
             Diff = null,
-            LoadDelegate = async () =>
+            LoadDelegate = async (patchFile) =>
             {
               try
               {
-                var fileContents = await githubApi.GetPullRequestFiles(x);
+                var fileContents = await githubApi.GetPullRequestFiles(pullRequestFile);
 
                 var contents = (await httpClient.GetStringAsync(fileContents.download_url))
                                 .Split('\n')

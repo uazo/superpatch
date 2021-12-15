@@ -20,7 +20,7 @@ namespace SuperPatch.Core
 
     public string FileName { get; set; }
 
-    public Func<Task<IEnumerable<FileDiff>>> LoadDelegate { get; set; }
+    public Func<PatchFile, Task<IEnumerable<FileDiff>>> LoadDelegate { get; set; }
 
     public IEnumerable<FileDiff> Diff { get; set; }
 
@@ -33,7 +33,7 @@ namespace SuperPatch.Core
       if(status != null)
         await status?.InvokeAsync($"Loading {FileName}");
 
-      Diff = await LoadDelegate();
+      Diff = await LoadDelegate(this);
 
       Status = PatchStatus.Loaded;
       if (status != null)

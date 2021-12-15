@@ -5,6 +5,8 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
+using SuperPatch.Core.Storages;
+
 namespace SuperPatch.Core
 {
   public class Workspace
@@ -17,11 +19,17 @@ namespace SuperPatch.Core
     public List<PatchFile> PatchsSet { get; set; }
     public List<Workspace> RelatedCommits { get; set; }
 
-    public async Task EnsureLoadPatchesOrderAsync()
+    public virtual async Task EnsureLoadPatchesOrderAsync()
     {
       if (PatchsSet != null) return;
 
+      if (await Storage.EnsureLoadPatchesOrderAsync() == true)
+        return;
+
       var patches_list = await Storage.GetPatchesListAsync();
+      // patches_list in some storage can be null 
+      if (patches_list == null) return;
+
       var order = patches_list.Split("\n");
 
       PatchsSet = new List<PatchFile>();
@@ -33,14 +41,15 @@ namespace SuperPatch.Core
         if (patchFileName.ToUpper().EndsWith("AUTOMATED-DOMAIN-SUBSTITUTION.PATCH"))
           continue;
 
-        Console.WriteLine($"Loading {patchFileName}");
+        Console.WriteLine($"Found {patchFileName}");
 
         var patchFile = new PatchFile()
         {
           FileName = patchFileName,
           Diff = null,
-          LoadDelegate = async() =>
+          LoadDelegate = async(patchFile) =>
           {
+            Console.WriteLine($"Loading {patchFileName}");
             var contents = (await Storage.GetPatchAsync(patchFileName))
                               .Split('\n')
                               .Where(x => !IsLineToRemove(x))

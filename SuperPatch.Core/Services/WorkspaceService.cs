@@ -11,6 +11,12 @@ using SuperPatch.Core.Status;
 
 namespace SuperPatch.Core.Services
 {
+  public enum RepoType
+  {
+    Bromite,
+    Kiwi
+  }
+
   public class WorkspaceService
   {
     HttpClient _http;
@@ -24,7 +30,7 @@ namespace SuperPatch.Core.Services
       _githubApi = githubApi;
     }
 
-    public async Task<ApiResult<Workspace>> LoadBySha(string sha)
+    public async Task<ApiResult<Workspace>> LoadBySha(RepoType repoType, string sha)
     {
       var ret = new ApiResult<Workspace>();
 
@@ -32,8 +38,15 @@ namespace SuperPatch.Core.Services
       {
         CommitShaOrTag = sha,
       };
-      wrk.Storage = 
-        new SuperPatch.Core.Storages.BromiteRemoteStorage(wrk, _http);
+
+      if (repoType == RepoType.Bromite)
+        wrk.Storage =
+          new SuperPatch.Core.Storages.Bromite.BromiteRemoteStorage(wrk, _http);
+      else if (repoType == RepoType.Kiwi)
+        wrk.Storage =
+          new SuperPatch.Core.Storages.Kiwi.KiwiRemoteStorage(wrk, _http, _githubApi);
+      else
+        throw new ApplicationException("unkwown type");
 
       // Check sha
       try

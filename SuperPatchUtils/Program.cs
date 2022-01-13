@@ -12,6 +12,7 @@ using System.Threading;
 using DiffPatch.Data;
 using SuperPatch.Core;
 using SuperPatch.Core.Storages;
+using OfficeOpenXml;
 
 namespace SuperPatchUtils
 {
@@ -19,6 +20,8 @@ namespace SuperPatchUtils
   {
     static async Task<int> Main(string[] args)
     {
+      ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
       var cmd = new RootCommand();
       foreach (var command in Commands.BromiteRepo.GetCommands())
         cmd.AddCommand(command);

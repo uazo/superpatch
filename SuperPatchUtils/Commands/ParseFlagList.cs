@@ -118,6 +118,12 @@ namespace SuperPatchUtils.Commands
         Commons.CombineDirectory(outputdirectory, $"flag-list-{commitshaortag}.json"),
         json);
 
+      // save excel
+      ExcelExporter.ExportToExcel(
+        Commons.CombineDirectory(outputdirectory, $"flag-list-{commitshaortag}.xlsx"),
+        commitshaortag,
+        flagList);
+
       // log results
       console.Out.Write("Bromite changed flags:\n");
       foreach (var field in flagList.Where(x => x.BromiteValue != null && x.DefaultValue != null &&

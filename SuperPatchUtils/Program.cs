@@ -24,6 +24,8 @@ namespace SuperPatchUtils
         cmd.AddCommand(command);
       foreach (var command in Commands.LocalRepo.GetCommands())
         cmd.AddCommand(command);
+      foreach (var command in Commands.ParseFlagList.GetCommands())
+        cmd.AddCommand(command);
 
       return await cmd.InvokeAsync(args);
     }

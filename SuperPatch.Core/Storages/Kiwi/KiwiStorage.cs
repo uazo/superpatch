@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SuperPatch.Core.Storages.Kiwi
 {
-  public abstract class KiwiStorage : RemoteChromiumStorage
+  public abstract class KiwiStorage : ChromiumStorage
   {
     public KiwiStorage(Workspace wrk, HttpClient http) : base(wrk, http) { }
 

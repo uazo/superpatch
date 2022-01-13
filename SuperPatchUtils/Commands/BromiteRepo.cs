@@ -23,11 +23,25 @@ namespace SuperPatchUtils.Commands
           new Argument<string>("commitshaortag", "Bromite Commit hash"),
           new Argument<string>("outputdir", "The output directory"),
           new Option("--verbose", "Verbose mode"),
-        }.WithHandler(typeof(BromiteRepo), nameof(Commands.BromiteRepo.DownloadAsync))
+        }.WithHandler(typeof(BromiteRepo), nameof(Commands.BromiteRepo.DownloadRepoAsync))
       };
     }
 
-    private static async Task<int> DownloadAsync(
+    private static async Task<int> DownloadRepoAsync(
+            string commitshaortag, string outputdir, bool verbose,
+            IConsole console, CancellationToken cancellationToken)
+    {
+      await DownloadAsync(commitshaortag, outputdir, verbose, console, cancellationToken);
+      return 0;
+    }
+
+    public class RepoData
+    {
+      public Workspace Workspace { get; set; }
+      public List<FileDiff> Files { get; internal set; }
+    }
+
+    public static async Task<RepoData> DownloadAsync(
                 string commitshaortag, string outputdir, bool verbose,
                 IConsole console, CancellationToken cancellationToken)
     {
@@ -57,7 +71,11 @@ namespace SuperPatchUtils.Commands
 
       await Commons.DoFetchAndStore(outputdir, wrk, allFiles, failed);
 
-      return 0;
+      return new RepoData()
+      {
+        Workspace = wrk,
+        Files = allFiles
+      };
     }
   }
 }

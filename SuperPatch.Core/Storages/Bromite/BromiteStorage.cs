@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SuperPatch.Core.Storages.Bromite
 {
-  public abstract class BromiteStorage : RemoteChromiumStorage
+  public abstract class BromiteStorage : ChromiumStorage
   {
     public BromiteStorage(Workspace wrk, HttpClient http) : base(wrk, http) { }
 

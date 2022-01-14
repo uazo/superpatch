@@ -103,7 +103,9 @@ namespace SuperPatchUtils.Commands
       // get bromite files
       var bromiteDirectory = Commons.CombineDirectory(outputdirectory, "bromite");
       var bromitePatchedDirectory = Commons.CombineDirectory(outputdirectory, "bromite-patched");
-      await GetFromBromite(commitshaortag, console, bromiteDirectory, bromitePatchedDirectory);
+
+      var bromiteWorkspace = await GetFromBromite(commitshaortag, console, bromiteDirectory, bromitePatchedDirectory);
+      var chromiumStorage = (ChromiumStorage)bromiteWorkspace.Storage;
 
       // parse value
       ParseValueFromCode(flagList, bromitePatchedDirectory, console,
@@ -115,13 +117,13 @@ namespace SuperPatchUtils.Commands
       // save json
       string json = JsonSerializer.Serialize(flagList.ToArray());
       System.IO.File.WriteAllText(
-        Commons.CombineDirectory(outputdirectory, $"flag-list-{commitshaortag}.json"),
+        Commons.CombineDirectory(outputdirectory, $"flags-list-{chromiumStorage.ChromiumCommit}.json"),
         json);
 
       // save excel
       ExcelExporter.ExportToExcel(
-        Commons.CombineDirectory(outputdirectory, $"flag-list-{commitshaortag}.xlsx"),
-        commitshaortag,
+        Commons.CombineDirectory(outputdirectory, $"flags-list-{chromiumStorage.ChromiumCommit}.xlsx"),
+        chromiumStorage.ChromiumCommit,
         flagList);
 
       // log results
@@ -237,7 +239,7 @@ namespace SuperPatchUtils.Commands
       }
     }
 
-    private static async Task GetFromBromite(string commitshaortag, IConsole console, string bromiteDirectory, string bromitePatchedDirectory)
+    private static async Task<Workspace> GetFromBromite(string commitshaortag, IConsole console, string bromiteDirectory, string bromitePatchedDirectory)
     {
       var statusDelegate = new SuperPatch.Core.Status.StatusDelegate();
 
@@ -266,6 +268,8 @@ namespace SuperPatchUtils.Commands
         }
         indexFile++;
       }
+
+      return wrkBromite.Workspace;
     }
 
     private static async Task GetFromChromium(string commitshaortag, IConsole console, List<SymbolsModel> flagList, string chromiumDirectory)

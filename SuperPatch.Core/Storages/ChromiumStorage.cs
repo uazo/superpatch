@@ -14,7 +14,7 @@ namespace SuperPatch.Core.Storages
 
     protected virtual string FileSourceUrl => @"https://raw.githubusercontent.com/chromium/chromium";
 
-    protected string ChromiumCommit { get; set; }
+    public string ChromiumCommit { get; protected set; }
 
     private string _CacheDirectory = null;
 

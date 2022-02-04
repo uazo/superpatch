@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SuperPatchUtils.Commands
+namespace SuperPatchUtils.Commands.Utils
 {
   public static class ExcelExporter
   {

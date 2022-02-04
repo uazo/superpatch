@@ -12,7 +12,7 @@ using DiffPatch.Data;
 using SuperPatch.Core;
 using SuperPatch.Core.Storages;
 
-namespace SuperPatchUtils.Commands
+namespace SuperPatchUtils.Commands.Utils
 {
   public static class Commons
   {

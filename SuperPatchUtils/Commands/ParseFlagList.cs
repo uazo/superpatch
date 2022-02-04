@@ -7,10 +7,12 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+
 using DiffPatch.Data;
 using SuperPatch.Core;
 using SuperPatch.Core.Storages;
 using SuperPatch.Core.Storages.Bromite;
+using SuperPatchUtils.Commands.Utils;
 
 namespace SuperPatchUtils.Commands
 {
@@ -121,7 +123,7 @@ namespace SuperPatchUtils.Commands
         json);
 
       // save excel
-      ExcelExporter.ExportToExcel(
+      Utils.ExcelExporter.ExportToExcel(
         Commons.CombineDirectory(outputdirectory, $"flags-list-{chromiumStorage.ChromiumCommit}.xlsx"),
         chromiumStorage.ChromiumCommit,
         flagList);

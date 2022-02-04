@@ -10,6 +10,7 @@ using DiffPatch.Data;
 using SuperPatch.Core;
 using SuperPatch.Core.Storages;
 using SuperPatch.Core.Storages.Bromite;
+using SuperPatchUtils.Commands.Utils;
 
 namespace SuperPatchUtils.Commands
 {

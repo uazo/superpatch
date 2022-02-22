@@ -36,12 +36,6 @@ namespace SuperPatchUtils.Commands
       return 0;
     }
 
-    public class RepoData
-    {
-      public Workspace Workspace { get; set; }
-      public List<FileDiff> Files { get; internal set; }
-    }
-
     public static async Task<RepoData> DownloadAsync(
                 string commitshaortag, string outputdir, bool verbose,
                 IConsole console, CancellationToken cancellationToken)
@@ -50,33 +44,18 @@ namespace SuperPatchUtils.Commands
       {
         CommitShaOrTag = commitshaortag
       };
-      wrk.Storage = new BromiteRemoteStorage(wrk, new System.Net.Http.HttpClient());
+      var httpClient = new System.Net.Http.HttpClient();
+      httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (compatible; SuperPatch/1.0)");
+      wrk.Storage = new BromiteRemoteStorage(wrk, httpClient);
+     
       await wrk.EnsureLoadPatchesOrderAsync();
 
       await wrk.EnsureLoadAllPatches(new SuperPatch.Core.Status.NoopStatusDelegate());
 
-      var allFiles = wrk.PatchsSet
-                        .Where(x => x != null)
-                        .SelectMany(x => x.Diff)
-                        .Where(x => x != null)
-                        .ToList();
+      var allFiles = wrk.GetFilesName(wrk.PatchsSet);
+      var failed = new List<IFileDiff>();
 
-      // remove new files from download
-      allFiles = allFiles
-                      .Where(x => x != null && x.From != "/dev/null")
-                      .GroupBy(x => x.From)
-                      .Select(x => x.FirstOrDefault())
-                      .ToList();
-
-      var failed = new List<FileDiff>();
-
-      await Commons.DoFetchAndStore(outputdir, wrk, allFiles, failed);
-
-      return new RepoData()
-      {
-        Workspace = wrk,
-        Files = allFiles
-      };
+      return await Commons.DoFetchAndStore(outputdir, wrk, allFiles, failed);
     }
   }
 }

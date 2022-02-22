@@ -73,7 +73,7 @@ namespace SuperPatch.Core.Storages.Kiwi
       return ToFileDiff(null, tree);
     }
 
-    private IEnumerable<FileDiff> ToFileDiff(FileDiff parent, GitHubApi.Tree tree)
+    private IEnumerable<FileDiff> ToFileDiff(IFileDiff parent, GitHubApi.Tree tree)
     {
       var folders = tree.tree
                         .Where(x => x.isTree()).OrderBy(x => x.path)
@@ -90,7 +90,7 @@ namespace SuperPatch.Core.Storages.Kiwi
       return await LoadSourceSet();
     }
 
-    public override async Task<string> GetFileAsync(FileDiff file)
+    public override async Task<string> GetFileAsync(IFileDiff file)
     {
       var kiwiFile = file as KiwiFileDiff;
       if (kiwiFile != null)
@@ -130,35 +130,9 @@ namespace SuperPatch.Core.Storages.Kiwi
     }
   }
 
-  public class KiwiFileDiff : FileDiff
+  public class KiwiFileDiff : RepoFileDiff
   {
-    internal GitHubApi.TreeItem treeItem;
-    private KiwiFileDiff Parent;
-
-    public KiwiFileDiff(FileDiff parent, GitHubApi.TreeItem treeItem)
-    {
-      this.treeItem = treeItem;
-      this.Parent = parent as KiwiFileDiff;
-
-      var path = string.Empty;
-      
-      var kParent = this.Parent;
-      while (kParent != null) 
-      {
-        if (string.IsNullOrWhiteSpace(path) == false)
-          path = "/" + path;
-        path = kParent.treeItem.path + path;
-        kParent = kParent.Parent;
-      }
-
-      if (string.IsNullOrWhiteSpace(path) == false)
-        path += "/";
-      path += treeItem.path;
-
-      this.From = this.To = path;
-      this.Type = FileChangeType.Modified;
-    }
-
-    public bool IsLoaded { get; internal set; }
+    public KiwiFileDiff(IFileDiff parent, GitHubApi.TreeItem treeItem) :
+      base(parent, treeItem) { }
   }
 }

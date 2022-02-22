@@ -17,6 +17,7 @@ namespace SuperPatch.Core.Storages
     public string ChromiumCommit { get; protected set; }
 
     private string _CacheDirectory = null;
+    protected string CacheDirectory { get { return _CacheDirectory; } }
 
     public ChromiumStorage(Workspace wrk, HttpClient http) : base(wrk)
     {
@@ -29,12 +30,12 @@ namespace SuperPatch.Core.Storages
       await Task.CompletedTask;
     }
 
-    public void SetCacheDirectory( string CacheDirectory )
+    public virtual void SetCacheDirectory( string CacheDirectory )
     {
       _CacheDirectory = CacheDirectory;
     }
 
-    public override async Task<string> GetFileAsync(FileDiff file)
+    public override async Task<string> GetFileAsync(IFileDiff file)
     {
       if (file.From == "/dev/null") return string.Empty;
       if (_CacheDirectory != null)

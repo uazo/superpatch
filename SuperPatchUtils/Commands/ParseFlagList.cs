@@ -248,28 +248,7 @@ namespace SuperPatchUtils.Commands
       var wrkBromite = await BromiteRepo.DownloadAsync(commitshaortag, bromiteDirectory, true, console, new CancellationToken());
       ((ChromiumStorage)wrkBromite.Workspace.Storage).SetCacheDirectory(bromiteDirectory);
 
-      var countFiles = wrkBromite.Files.Count;
-      var indexFile = 1;
-      foreach (var file in wrkBromite.Files)
-      {
-        if (file.To == "/dev/null") continue;
-
-        string patchedFileName = Commons.CombineDirectory(bromitePatchedDirectory, file.To);
-        if (!System.IO.File.Exists(patchedFileName))
-        {
-          console.Out.Write($"[{indexFile}/{countFiles}] Patching {patchedFileName}\n");
-
-          var view = await PatchViewBuilder.CreateAsync(wrkBromite.Workspace, wrkBromite.Workspace.PatchsSet, statusDelegate);
-          view.CurrentPatchs = new List<PatchFile>();
-          var patched = await PatchViewBuilder.BuildAsync(view, file.To, statusDelegate);
-          string directory = System.IO.Path.GetDirectoryName(patchedFileName);
-          if (System.IO.Directory.Exists(directory) == false)
-            System.IO.Directory.CreateDirectory(directory);
-
-          System.IO.File.WriteAllText(patchedFileName, patched.Contents);
-        }
-        indexFile++;
-      }
+      await Commons.PatchFiles(wrkBromite, bromitePatchedDirectory, console, statusDelegate);
 
       return wrkBromite.Workspace;
     }
@@ -284,6 +263,7 @@ namespace SuperPatchUtils.Commands
                           {
                             From = x
                           })
+                          .Cast<IFileDiff>()
                           .ToList();
       var wrkChromium = new Workspace()
       {
@@ -291,7 +271,7 @@ namespace SuperPatchUtils.Commands
       };
       wrkChromium.Storage = new BromiteRemoteStorage(wrkChromium, new System.Net.Http.HttpClient());
 
-      var failed = new List<FileDiff>();
+      var failed = new List<IFileDiff>();
       await Commons.DoFetchAndStore(chromiumDirectory, wrkChromium, allFiles, failed);
 
       if (failed.Count() != 0)

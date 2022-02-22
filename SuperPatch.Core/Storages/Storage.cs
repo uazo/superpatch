@@ -15,7 +15,7 @@ namespace SuperPatch.Core.Storages
       this.workspace = wrk;
     }
 
-    public abstract Task<string> GetFileAsync(FileDiff file);
+    public abstract Task<string> GetFileAsync(IFileDiff file);
     public abstract Task<string> GetPatchAsync(string filename);
     public abstract Task<string> GetPatchesListAsync();
 
@@ -32,5 +32,7 @@ namespace SuperPatch.Core.Storages
     {
       return await Task.FromResult(DiffPatch.PatchHelper.Patch(file.Contents, diff.Chunks, "\n"));
     }
+
+    public virtual async Task ProcessPatchedFileAsync(FilePatchedContents file) => await Task.CompletedTask;
   }
 }

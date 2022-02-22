@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-
+using DiffPatch.Data;
 using SuperPatch.Core.Storages;
 
 namespace SuperPatch.Core
@@ -68,6 +68,24 @@ namespace SuperPatch.Core
              line == "2.20.1";
     }
 
+    public List<IFileDiff> GetFilesName(List<PatchFile> patchsSet)
+    {
+      var allFiles = patchsSet
+                        .Where(x => x != null)
+                        .SelectMany(x => x.Diff)
+                        .Where(x => x != null)
+                        .Cast<IFileDiff>()
+                        .ToList();
+
+      // remove new files from download
+      allFiles = allFiles
+                      .Where(x => x != null && x.From != "/dev/null")
+                      .GroupBy(x => x.From)
+                      .Select(x => x.FirstOrDefault())
+                      .ToList();
+      return allFiles;
+    }
+
     public async Task EnsureLoadAllPatches(Status.StatusDelegate status)
     {
       await EnsureLoadPatches(PatchsSet, status);
@@ -88,5 +106,9 @@ namespace SuperPatch.Core
       }
     }
 
+    public virtual async Task ProcessPatchedFileAsync(FilePatchedContents file)
+    {
+      await Storage.ProcessPatchedFileAsync(file);
+    }
   }
 }

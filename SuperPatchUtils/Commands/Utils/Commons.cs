@@ -20,11 +20,11 @@ namespace SuperPatchUtils.Commands.Utils
       System.IO.Path.Combine(a,
             b.Replace('/', System.IO.Path.DirectorySeparatorChar));
 
-    public static async Task DoFetchAndStore(string outputdir, Workspace wrk, List<FileDiff> allFiles, List<FileDiff> failed)
+    public static async Task<RepoData> DoFetchAndStore(string outputdir, Workspace wrk, List<IFileDiff> fileToDownload, List<IFileDiff> failed)
     {
-      int fileCount = allFiles.Count();
+      int fileCount = fileToDownload.Count();
       int currentFile = 0;
-      foreach (var file in allFiles)
+      foreach (var file in fileToDownload)
       {
         currentFile++;
         try
@@ -54,6 +54,12 @@ namespace SuperPatchUtils.Commands.Utils
           failed.Add(file);
         }
       }
+
+      return new RepoData()
+      {
+        Workspace = wrk,
+        Files = fileToDownload
+      };
     }
 
     public static Command WithHandler(this Command command, Type ClassType, string methodName)
@@ -74,6 +80,35 @@ namespace SuperPatchUtils.Commands.Utils
       }
 
       yield return @string.Substring(previousIndex);
+    }
+
+    public static async Task PatchFiles(RepoData repo,
+      string outputDirectory,
+      IConsole console,
+      SuperPatch.Core.Status.StatusDelegate statusDelegate)
+    {
+      var countFiles = repo.Files.Count;
+      var indexFile = 1;
+      foreach (var file in repo.Files)
+      {
+        if (file.To == "/dev/null") continue;
+
+        string patchedFileName = Commons.CombineDirectory(outputDirectory, file.To);
+        if (!System.IO.File.Exists(patchedFileName))
+        {
+          console.Out.Write($"[{indexFile}/{countFiles}] Patching {patchedFileName}\n");
+
+          var view = await PatchViewBuilder.CreateAsync(repo.Workspace, repo.Workspace.PatchsSet, statusDelegate);
+          view.CurrentPatchs = new List<PatchFile>();
+          var patched = await PatchViewBuilder.BuildAsync(view, file.To, statusDelegate);
+          string directory = System.IO.Path.GetDirectoryName(patchedFileName);
+          if (System.IO.Directory.Exists(directory) == false)
+            System.IO.Directory.CreateDirectory(directory);
+
+          System.IO.File.WriteAllText(patchedFileName, patched.Contents);
+        }
+        indexFile++;
+      }
     }
   }
 }

@@ -29,6 +29,8 @@ namespace SuperPatchUtils
         cmd.AddCommand(command);
       foreach (var command in Commands.ParseFlagList.GetCommands())
         cmd.AddCommand(command);
+      foreach (var command in Commands.BraveRepo.GetCommands())
+        cmd.AddCommand(command);
 
       return await cmd.InvokeAsync(args);
     }

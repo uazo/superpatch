@@ -3,7 +3,20 @@ using System.Linq;
 
 namespace DiffPatch.Data
 {
-  public class FileDiff
+  public interface IFileDiff
+  {
+    bool Add { get; }
+    int Additions { get; set; }
+    List<Chunk> Chunks { get; set; }
+    bool Deleted { get; }
+    int Deletions { get; set; }
+    string From { get; set; }
+    List<string> Index { get; set; }
+    string To { get; set; }
+    FileChangeType Type { get; set; }
+  }
+
+  public class FileDiff : IFileDiff
   {
     public List<Chunk> Chunks { get; set; } = new List<Chunk>();
 

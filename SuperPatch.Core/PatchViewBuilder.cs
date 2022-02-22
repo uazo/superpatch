@@ -112,6 +112,8 @@ namespace SuperPatch.Core
           if (view.CurrentPatchs.Contains(patch)) break;
         }
 
+        await view.Workspace.ProcessPatchedFileAsync(file);
+
         return file;
       }
       finally

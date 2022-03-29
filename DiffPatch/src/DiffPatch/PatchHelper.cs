@@ -20,29 +20,37 @@ namespace DiffPatch
         if (chunk.RangeInfo.NewRange.StartLine != 0)
           lineIndex = chunk.RangeInfo.NewRange.StartLine - 1; // zero-index the start line 
 
-        foreach (LineDiff lineDiff in chunk.Changes)
+        try
         {
-          if (lineDiff.Add)
+          foreach (LineDiff lineDiff in chunk.Changes)
           {
-            if ((dstLines.Count + 1) == lineIndex)
+            if (lineDiff.Add)
             {
-              dstLines.Add(lineDiff.Content);
+              if ((dstLines.Count + 1) == lineIndex)
+              {
+                dstLines.Add(lineDiff.Content);
+              }
+              else
+              {
+                dstLines.Insert(lineIndex, lineDiff.Content);
+                lineIndex++;
+              }
             }
-            else
+            else if (lineDiff.Delete)
             {
-              dstLines.Insert(lineIndex, lineDiff.Content);
+              if( dstLines.Count != lineIndex)
+                dstLines.RemoveAt(lineIndex);
+            }
+            else if (lineDiff.Normal)
+            {
               lineIndex++;
             }
           }
-          else if (lineDiff.Delete)
-          {
-            dstLines.RemoveAt(lineIndex);
-          }
-          else if (lineDiff.Normal)
-          {
-            lineIndex++;
-          }
         }
+        catch (Exception ex)
+				{
+          throw;
+				}
 
       }
 

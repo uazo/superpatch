@@ -84,7 +84,17 @@ namespace SuperPatch.Core.Services
             CommitShaOrTag = x.sha,
             CommitMessage = x.commit.message
           }).ToList();
+
+          wrk.RelatedCommits.AddRange( commits.Where(x=>x.parents != null)
+                        .SelectMany( x => x.parents )
+                        .Select( x => new Workspace()
+          {
+              CommitShaOrTag = "bd8369329286eb256cb4c835d0abee0251c234e3",
+              CommitMessage = $"x.sha"
+          }));
           wrk.RelatedCommits.ForEach(x => x.Storage = wrk.Storage.Clone(x));
+          
+          
         }
       }
     }

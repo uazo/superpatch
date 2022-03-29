@@ -97,5 +97,13 @@ namespace SuperPatch.Core.GitHubApi
   {
     public string sha { get; set; }
     public Commit commit { get; set; }
+    public Parents[] parents { get; set; }
+  }
+
+  public class Parents
+  {
+    public string sha { get; set; }
+    public string url { get; set; }
+    public string html_url { get; set; }
   }
 }

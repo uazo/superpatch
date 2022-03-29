@@ -12,61 +12,13 @@ using DiffPatch.Data;
 using SuperPatch.Core;
 using SuperPatch.Core.Storages;
 using SuperPatch.Core.Storages.Bromite;
+using SuperPatchUtils.Commands.Flags;
 using SuperPatchUtils.Commands.Utils;
 
 namespace SuperPatchUtils.Commands
 {
   public class ParseFlagList
   {
-    public class SymbolsModel
-    {
-      public string Id { get; set; }
-      public string Name { get; set; }
-      public string Scope { get; set; }
-      public string Signature { get; set; }
-      public string Documentation { get; set; }
-      public string ReturnType { get; set; }
-      public string Type { get; set; }
-      public string DefPath { get; set; }
-      public int DefStartLine { get; set; }
-      public int DefStartCol { get; set; }
-      public int DefEndLine { get; set; }
-      public int DefEndCol { get; set; }
-      public string DeclPath { get; set; }
-      public int DeclStartLine { get; set; }
-      public int DeclStartCol { get; set; }
-      public int DeclEndLine { get; set; }
-      public int DeclEndCol { get; set; }
-      public int Kind { get; set; }
-      public int SubKind { get; set; }
-      public int Language { get; set; }
-      public int Generic { get; set; }
-      public int TemplatePartialSpecialization { get; set; }
-      public int TemplateSpecialization { get; set; }
-      public int UnitTest { get; set; }
-      public int IBAnnotated { get; set; }
-      public int IBOutletCollection { get; set; }
-      public int GKInspectable { get; set; }
-      public int Local { get; set; }
-      public int ProtocolInterface { get; set; }
-
-      [IgnoreLoader] public string DefaultValue { get; set; }
-      [IgnoreLoader] public string BromiteValue { get; set; }
-      [IgnoreLoader] public string AboutFlagName { get; internal set; }
-      [IgnoreLoader] public string AboutFlagDescription { get; internal set; }
-      [IgnoreLoader] public string AboutFlagOs { get; internal set; }
-
-      public string GetFlagOrScopeName()
-      {
-        if (AboutFlagName == null)
-          return $"{Scope}{Name}";
-        else
-          return AboutFlagName;
-      }
-    }
-
-    public class IgnoreLoaderAttribute : Attribute { }
-
     internal static IEnumerable<Command> GetCommands()
     {
       return new[]

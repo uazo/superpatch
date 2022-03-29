@@ -47,7 +47,7 @@ namespace DiffPatch
             }
           }
         }
-        catch (Exception ex)
+        catch // (Exception ex)
 				{
           throw;
 				}

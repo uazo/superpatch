@@ -43,10 +43,25 @@ namespace SuperPatchUtils.Commands
         return 1;
       }
 
+      var orderedList = System.IO.Directory.EnumerateFiles(sourcedirectory)
+        .Select(x => new
+        {
+          PathFile = x,
+          FileName = System.IO.Path.GetFileName(x),
+          Version = System.IO.Path.GetFileName(x).Replace("flags-list-","").Split(".")
+        })
+        .Where(x => System.IO.Path.GetFileName(x.FileName).StartsWith("flags-list-"))
+        .OrderBy(x => int.Parse(x.Version[3]) * 1 +
+                      int.Parse(x.Version[2]) * 100 +
+                      int.Parse(x.Version[1]) * 10000 +
+                      int.Parse(x.Version[0]) * 1000000)
+        .Select(x => x.PathFile)
+        .ToList();
+
       var result = new ConsolidateList();
       result.Symbols = new List<Flag>();
       result.Versions = new List<Flags.Version>();
-      foreach (var file in System.IO.Directory.EnumerateFiles(sourcedirectory).OrderBy(x => x))
+      foreach (var file in orderedList)
       {
         var currentVersion = System.IO.Path.GetFileNameWithoutExtension(file).ToLower();
         if( !currentVersion.StartsWith("flags-list-"))

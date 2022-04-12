@@ -40,16 +40,16 @@ namespace SuperPatch.Core.Storages.Kiwi
       ChromiumCommit = string.Join(".", build);
     }
 
-    public override async Task<string> GetPatchAsync(string filename)
+    public override async Task<byte[]> GetPatchAsync(string filename)
     {
       try
       {
-        return await http.GetStringAsync($"{PatchSourceUrl}/{workspace.CommitShaOrTag}/build/patches/{filename}");
+        return await http.GetByteArrayAsync($"{PatchSourceUrl}/{workspace.CommitShaOrTag}/build/patches/{filename}");
       }
       catch
       {
         // file removed
-        return string.Empty;
+        return null;
       }
     }
 
@@ -90,20 +90,20 @@ namespace SuperPatch.Core.Storages.Kiwi
       return await LoadSourceSet();
     }
 
-    public override async Task<string> GetFileAsync(IFileDiff file)
+    public override async Task<byte[]> GetFileAsync(IFileDiff file)
     {
       var kiwiFile = file as KiwiFileDiff;
       if (kiwiFile != null)
       {
         if (kiwiFile.treeItem.isTree())
         {
-          if (kiwiFile.IsLoaded) return string.Empty;
+          if (kiwiFile.IsLoaded) return null;
 
           var patch = workspace.PatchsSet.First();
           var tree = await githupService.GetTreesAsync(kiwiFile.treeItem.url);
           patch.Diff = patch.Diff.Union(ToFileDiff(file, tree)).ToList();
           kiwiFile.IsLoaded = true;
-          return string.Empty;
+          return null;
         }
       }
       try

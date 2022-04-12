@@ -15,8 +15,8 @@ namespace SuperPatch.Core.Storages
       this.workspace = wrk;
     }
 
-    public abstract Task<string> GetFileAsync(IFileDiff file);
-    public abstract Task<string> GetPatchAsync(string filename);
+    public abstract Task<byte[]> GetFileAsync(IFileDiff file);
+    public abstract Task<byte[]> GetPatchAsync(string filename);
     public abstract Task<string> GetPatchesListAsync();
 
     public abstract string StorageName { get; }

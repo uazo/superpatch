@@ -29,12 +29,12 @@ namespace SuperPatch.Core.Storages.Bromite
       ChromiumCommit = await System.IO.File.ReadAllTextAsync(file);
     }
 
-    public override async Task<string> GetPatchAsync(string patch)
+    public override async Task<byte[]> GetPatchAsync(string patch)
     {
       var file = System.IO.Path.Combine(
                     System.IO.Path.Combine(repoDirectory, "build/patches"),
                     patch);
-      return await System.IO.File.ReadAllTextAsync(file);
+      return await System.IO.File.ReadAllBytesAsync(file);
     }
 
     public override async Task<string> GetPatchesListAsync()

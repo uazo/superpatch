@@ -25,16 +25,16 @@ namespace SuperPatch.Core.Storages.Bromite
         .Replace("\r", "");
     }
 
-    public override async Task<string> GetPatchAsync(string filename)
+    public override async Task<byte[]> GetPatchAsync(string filename)
     {
       try
       {
-        return await http.GetStringAsync($"{PatchSourceUrl}/{workspace.CommitShaOrTag}/build/patches/{filename}");
+        return await http.GetByteArrayAsync($"{PatchSourceUrl}/{workspace.CommitShaOrTag}/build/patches/{filename}");
       }
       catch
       {
         // file removed
-        return string.Empty;
+        return null;
       }
     }
 

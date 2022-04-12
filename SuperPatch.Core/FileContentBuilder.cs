@@ -24,13 +24,13 @@ namespace SuperPatch.Core
     internal static async Task<FileContents> LoadAsync(Workspace wrk, FileDiff file, Status.StatusDelegate status)
     {
       status?.InvokeAsync($"Loading {file.From}");
-      string fileContent = await wrk.Storage.GetFileAsync(file);
+      var fileContent = await wrk.Storage.GetFileAsync(file);
       status?.InvokeAsync($"Loaded {file.From}");
 
       var contents = new FileContents()
       {
         FileName = file.From,
-        Contents = fileContent,
+        Contents = System.Text.Encoding.UTF8.GetString(fileContent),
         Status = FileContentsStatus.Loaded
       };
       return contents;

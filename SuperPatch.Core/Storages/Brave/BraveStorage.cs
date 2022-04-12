@@ -66,7 +66,7 @@ namespace SuperPatch.Core.Storages.Brave
 
     public async Task QueryChromiumCommit() => await FetchChromiumCommit();
 
-    public override async Task<string> GetFileAsync(IFileDiff file)
+    public override async Task<byte[]> GetFileAsync(IFileDiff file)
     {
       if( file is RepoFileDiff)
         return await GetPatchAsync(file.From);
@@ -74,19 +74,19 @@ namespace SuperPatch.Core.Storages.Brave
         return await base.GetFileAsync(file);
     }
 
-    public override async Task<string> GetPatchAsync(string filename)
+    public override async Task<byte[]> GetPatchAsync(string filename)
     {
       if (_CacheDirectory != null)
       {
         var localFile = System.IO.Path.Combine(_CacheDirectory, filename);
         if (System.IO.File.Exists(localFile))
-          return await System.IO.File.ReadAllTextAsync(localFile);
+          return await System.IO.File.ReadAllBytesAsync(localFile);
       }
 
-      var contents = string.Empty;
+      byte[] contents = null;
       try
       {
-        contents = await http.GetStringAsync($"{PatchSourceUrl}/{workspace.CommitShaOrTag}/{filename}");
+        contents = await http.GetByteArrayAsync($"{PatchSourceUrl}/{workspace.CommitShaOrTag}/{filename}");
       }
       catch
       {
@@ -99,7 +99,7 @@ namespace SuperPatch.Core.Storages.Brave
         if (System.IO.Directory.Exists(directory) == false)
           System.IO.Directory.CreateDirectory(directory);
 
-        System.IO.File.WriteAllText(localFile, contents);
+        System.IO.File.WriteAllBytes(localFile, contents);
       }
 
       return contents;
@@ -120,11 +120,12 @@ namespace SuperPatch.Core.Storages.Brave
     {
       var regEx = new System.Text.RegularExpressions.Regex("#include \"(.*?)\"");
 
-      var source = await GetPatchAsync($"chromium_src/{file.FileName}");
-      if( source == "")
+      var sourceBytes = await GetPatchAsync($"chromium_src/{file.FileName}");
+      if(sourceBytes == null)
       {
         return;
       }
+      var source = System.Text.Encoding.UTF8.GetString(sourceBytes);
       var chrContents = file.Contents;
 
       file.Contents = string.Empty;

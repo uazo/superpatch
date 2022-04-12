@@ -35,27 +35,27 @@ namespace SuperPatch.Core.Storages
       _CacheDirectory = CacheDirectory;
     }
 
-    public override async Task<string> GetFileAsync(IFileDiff file)
+    public override async Task<byte[]> GetFileAsync(IFileDiff file)
     {
-      if (file.From == "/dev/null") return string.Empty;
+      if (file.From == "/dev/null") return null;
       if (_CacheDirectory != null)
       {
         var localFile = System.IO.Path.Combine(_CacheDirectory, file.From);
         if( System.IO.File.Exists(localFile))
-          return await System.IO.File.ReadAllTextAsync(localFile);
+          return await System.IO.File.ReadAllBytesAsync(localFile);
       }
 
       if (string.IsNullOrEmpty(ChromiumCommit)) await FetchChromiumCommit();
-      var content = await http.GetStringAsync($"{FileSourceUrl}/{ChromiumCommit}/{file.From}");
+      var content = await http.GetByteArrayAsync($"{FileSourceUrl}/{ChromiumCommit}/{file.From}");
 
-      if( _CacheDirectory != null)
+      if (_CacheDirectory != null)
       {
         var localFile = System.IO.Path.Combine(_CacheDirectory, file.From);
         var directory = System.IO.Path.GetDirectoryName(localFile);
         if (System.IO.Directory.Exists(directory) == false)
           System.IO.Directory.CreateDirectory(directory);
 
-        System.IO.File.WriteAllText(localFile, content);
+        System.IO.File.WriteAllBytes(localFile, content);
       }
 
       return content;

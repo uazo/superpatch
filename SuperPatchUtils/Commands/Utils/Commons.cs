@@ -39,13 +39,13 @@ namespace SuperPatchUtils.Commands.Utils
           {
             Console.WriteLine($"[{currentFile}/{fileCount}] Downloading {file.From}");
 
-            string content = await wrk.Storage.GetFileAsync(file);
+            var content = await wrk.Storage.GetFileAsync(file);
 
             string directory = System.IO.Path.GetDirectoryName(filePath);
             if (System.IO.Directory.Exists(directory) == false)
               System.IO.Directory.CreateDirectory(directory);
 
-            System.IO.File.WriteAllText(filePath, content);
+            System.IO.File.WriteAllBytes(filePath, content);
           }
         }
         catch (System.Exception ex)

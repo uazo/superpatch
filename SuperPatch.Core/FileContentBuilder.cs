@@ -30,7 +30,7 @@ namespace SuperPatch.Core
       var contents = new FileContents()
       {
         FileName = file.From,
-        Contents = System.Text.Encoding.UTF8.GetString(fileContent),
+        Contents = fileContent == null ? String.Empty : System.Text.Encoding.UTF8.GetString(fileContent),
         Status = FileContentsStatus.Loaded
       };
       return contents;

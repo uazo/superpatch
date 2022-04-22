@@ -50,7 +50,8 @@ namespace SuperPatch.Core
           LoadDelegate = async(patchFile) =>
           {
             Console.WriteLine($"Loading {patchFileName}");
-            var contents = Encoding.UTF8.GetString((await Storage.GetPatchAsync(patchFileName)))
+            var byteContent = await Storage.GetPatchAsync(patchFileName);
+            var contents = (byteContent == null ? string.Empty : Encoding.UTF8.GetString(byteContent))
                               .Split('\n')
                               .Where(x => !IsLineToRemove(x))
                               .ToList();

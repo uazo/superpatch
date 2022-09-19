@@ -35,7 +35,7 @@ else
   protected override async Task OnInitializedAsync()
   {
     var sha = urlCleaner.RestoreFromUrl(CommitHashFromUrl);
-    if (sha == null) sha = "kiwi";
+    if (sha == null) sha = "main";
 
     var result = await workspaceService.LoadBySha(Core.Services.RepoType.Kiwi, sha);
     if (result.IsOk == false)

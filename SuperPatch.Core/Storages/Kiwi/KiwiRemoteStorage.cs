@@ -67,6 +67,11 @@ namespace SuperPatch.Core.Storages.Kiwi
       return await Task.FromResult(true);
     }
 
+    private async Task<IEnumerable<FileDiff>> PatchFileLoadDelegate(PatchFile patchFile)
+    {
+      return await LoadSourceSet();
+    }
+
     private async Task<IEnumerable<FileDiff>> LoadSourceSet()
     {
       var tree = await githupService.GetTreesAsync(workspace, workspace.CommitShaOrTag, true);
@@ -83,11 +88,6 @@ namespace SuperPatch.Core.Storages.Kiwi
                         .Select(x => new KiwiFileDiff(parent, x)).ToList();
 
       return folders.Union(files).ToList();
-    }
-
-    private async Task<IEnumerable<FileDiff>> PatchFileLoadDelegate(PatchFile patchFile)
-    {
-      return await LoadSourceSet();
     }
 
     public override async Task<byte[]> GetFileAsync(IFileDiff file)

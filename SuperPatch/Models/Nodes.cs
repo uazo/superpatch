@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,7 +12,9 @@ namespace SuperPatch.Models
     
     public string Label { get; set; }
 
-    public string Id { get; set; } = System.Guid.NewGuid().ToString();
+    public string Guid { get; set; } = System.Guid.NewGuid().ToString();
+
+    public string Key { get; set; }
 
     public Nodes<T> Childs { get; set; } = new Nodes<T>();
   }
@@ -22,18 +25,35 @@ namespace SuperPatch.Models
     {
       var parent = this;
       Node<T> item = null;
+      string key = null;
       foreach (var path in paths)
       {
+        key = $"{key}_{path}";
         var node = parent.FirstOrDefault(x => x.Label == path);
         if (node == null)
         {
           node = new Node<T>() { Label = path };
+          node.Key = key;
           parent.Add(node);
         }
         item = node;
         parent = node.Childs;
       }
       return item;
+    }
+
+    public IEnumerable<Node<T>> Flatten()
+    {
+      foreach (var node in this)
+      {
+        yield return node;
+
+        if (node.Childs == null)
+          yield break;
+
+        foreach (var child in node.Childs.Flatten())
+          yield return child;
+      }
     }
   }
 }

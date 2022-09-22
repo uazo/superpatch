@@ -105,13 +105,15 @@
     @if (ViewerModel.RootFolder != null)
     {
       <div>
-        <Tree DefaultExpandAll ShowLine
+        <Tree ShowLine
               TItem="Node<FilePatchedContents>"
               TitleExpression="x => x.DataItem.Label"
               ChildrenExpression="x => x.DataItem.Childs"
               IsLeafExpression="x => x.DataItem.Childs?.Count() == 0"
-              KeyExpression="x => x.DataItem.Id"
+              KeyExpression="x => x.DataItem.Key"
               DataSource="ViewerModel.RootFolder.Childs"
+              ExpandedKeys="ViewerModel.TreeExpandedKeys"
+              OnExpandChanged="x => UpdateExpandedKey(x.Node)"
               SelectedNodeChanged="OnSelectedNodeChangedAsync">
           <TitleTemplate>
             @if (context.DataItem.Item?.ChangeType == DiffPatch.Data.FileChangeType.Add)
@@ -146,181 +148,206 @@
 
 @code {
 
-  private Models.CommitViewerModel ViewerModel;
-  private int SpinCounter = 0;
-  NotificationRef notification;
+    private Models.CommitViewerModel ViewerModel;
+    private int SpinCounter = 0;
+    NotificationRef notification;
 
-  private int GetPanelHeight() => CommonData.Height - 60;
+    private int GetPanelHeight() => CommonData.Height - 60;
 
-  protected override async Task OnInitializedAsync()
-  {
-    ViewerModel = new CommitViewerModel()
+    protected override async Task OnInitializedAsync()
     {
-      Workspace = Workspace,
-      CurrentSelectedPatches = new List<PatchFile>()
-    };
-    ViewerModel.StatusUpdater = new Core.Status.StatusDelegate()
-    {
-      // TODO: fix me
-      OnChangedAsync = null, // async (msg) => await InvokeAsync(() => StateHasChanged())
-      OnBeginWorkAsync = async (msg) => await OnBeginWorkAsync(msg),
-      OnEndWorkAsync = async (msg) => await OnEndWorkAsync(msg),
-    };
-
-    await Workspace.EnsureLoadPatchesOrderAsync();
-    await Workspace.EnsureLoadAllPatches(ViewerModel.StatusUpdater);
-  }
-
-  private async Task OnBeginWorkAsync(string msg)
-  {
-    SpinCounter++;
-    if (string.IsNullOrEmpty(msg) == false)
-    {
-      if ( notification == null)
+        ViewerModel = new CommitViewerModel()
       {
-        notification = await notificationService.Open(new NotificationConfig()
+        Workspace = Workspace,
+        CurrentSelectedPatches = new List<PatchFile>()
+      };
+
+        ViewerModel.StatusUpdater = new Core.Status.StatusDelegate()
+      {
+        // TODO: fix me
+        OnChangedAsync = null, // async (msg) => await InvokeAsync(() => StateHasChanged())
+        OnBeginWorkAsync = async (msg) => await OnBeginWorkAsync(msg),
+        OnEndWorkAsync = async (msg) => await OnEndWorkAsync(msg),
+      };
+
+        await Workspace.EnsureLoadPatchesOrderAsync();
+        await Workspace.EnsureLoadAllPatches(ViewerModel.StatusUpdater);
+    }
+
+    private async Task OnBeginWorkAsync(string msg)
+    {
+        SpinCounter++;
+        if (string.IsNullOrEmpty(msg) == false)
         {
-          Message = msg,
-          Placement = NotificationPlacement.BottomRight,
-          Duration = 0,
-          Style = "font-size: 10px",
-          Key = "primarymessage",
-        });
+            if ( notification == null)
+            {
+                notification = await notificationService.Open(new NotificationConfig()
+              {
+                Message = msg,
+                Placement = NotificationPlacement.BottomRight,
+                Duration = 0,
+                Style = "font-size: 10px",
+                Key = "primarymessage",
+              });
+            }
+            else
+            {
+                notification.Config.Message = msg;
+                await notification.UpdateConfigAsync();
+            }
+            await notification.OpenAsync();
+        }
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private async Task OnEndWorkAsync(string msg)
+    {
+        SpinCounter--;
+        if (SpinCounter < 0) SpinCounter = 0;
+        if (notification != null && SpinCounter == 0)
+        {
+            await notification.CloseAsync();
+            notification = null;
+        }
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private async void OnSelectedItemsChangedHandlerAsync(IEnumerable<PatchFile> values)
+    {
+        var v = values.ToList();
+        ViewerModel.CurrentSelectedPatches = v;
+        ViewerModel.File = null;
+        ViewerModel.TreeExpandedKeys = new string[0];
+
+        await PrepareView();
+    }
+
+    private async Task PrepareView()
+    {
+        await Task.WhenAll(
+          ViewerModel.CurrentSelectedPatches.Select((x) => x.EnsureLoad(ViewerModel.StatusUpdater)));
+
+        ViewerModel.CurrentPatchView = await PatchViewBuilder.CreateAsync(
+          ViewerModel.Workspace, ViewerModel.CurrentSelectedPatches, ViewerModel.StatusUpdater);
+        PrepareFoldersModel();
+    }
+
+    private void PrepareFoldersModel()
+    {
+        ViewerModel.CurrentPatchView.UpdateFiles();
+
+        var root = new Node<FilePatchedContents>();
+        var files = ViewerModel.CurrentPatchView.Files.ToList();
+        if( ViewerModel.CompareWithPatchView != null)
+        {
+            files.RemoveAll(x =>
+            {
+                var other = ViewerModel.CompareWithPatchView.Files.FirstOrDefault(z => x.FileName == z.FileName);
+                if (other == null) return true;
+                return x.Diff.IsEqualTo(other.Diff);
+            });
+        }
+
+        foreach (var file in files)
+        {
+            var parts = file.FileName.Split("/");
+            var node = root.Childs.GetOrCreateNode(parts);
+            node.Item = file;
+        }
+        ViewerModel.RootFolder = root;
+        ExpandAll();
+
+        this.StateHasChanged();
+    }
+
+    private async Task OnSelectedNodeChangedAsync(TreeNode<Node<FilePatchedContents>> selected)
+    {
+        await SelectedFile(null, selected.DataItem.Item.FileName);
+    }
+
+    private async Task SelectedFile(PatchFile patch, string fileName)
+    {
+        if (patch == null && string.IsNullOrEmpty(fileName) == false)
+        {
+            ViewerModel.File = null;
+            ViewerModel.CurrentFile = null;
+
+            ViewerModel.File = await PatchViewBuilder.BuildAsync(
+              ViewerModel.CurrentPatchView, fileName, ViewerModel.StatusUpdater);
+        }
+        else if (patch != null)
+        {
+            ViewerModel.CurrentFile = null;
+            await patch.EnsureLoad(ViewerModel.StatusUpdater);
+
+            var patchView = await PatchViewBuilder.CreateAsync(Workspace,
+              new[] { patch }, ViewerModel.StatusUpdater);
+
+            ViewerModel.CurrentFile = await PatchViewBuilder.BuildAsync(
+                patchView, fileName, ViewerModel.StatusUpdater);
+        }
+        else
+        {
+            ViewerModel.File = null;
+            ViewerModel.CurrentFile = null;
+        }
+
+        if (ViewerModel.CompareWith != null && ViewerModel.File != null)
+        {
+            var actualFile = ViewerModel.File;
+            ViewerModel.File = null;
+
+            var compareFile = await PatchViewBuilder.BuildAsync(
+              ViewerModel.CompareWithPatchView, fileName, ViewerModel.StatusUpdater);
+            ViewerModel.File = actualFile;
+            ViewerModel.File.OriginalContents = compareFile;
+        }
+
+        PrepareFoldersModel();
+        this.StateHasChanged();
+    }
+
+    public async void SelectCompareAsync(Workspace compareWith)
+    {
+        ViewerModel.CompareWith = null;
+        ViewerModel.CompareWithPatchView = null;
+
+        if (compareWith != null)
+        {
+            ViewerModel.CompareWith = compareWith;
+            await ViewerModel.CompareWith.EnsureLoadPatchesOrderAsync();
+
+            var selectedPatchs = ViewerModel.CompareWith.PatchsSet
+                                                        .Where(x => ViewerModel.CurrentSelectedPatches.Any(z => z.FileName == x.FileName))
+                                                        .ToList();
+            await ViewerModel.CompareWith.EnsureLoadPatches(selectedPatchs, ViewerModel.StatusUpdater);
+
+            ViewerModel.CompareWithPatchView = await PatchViewBuilder.CreateAsync(
+              ViewerModel.CompareWith, selectedPatchs, ViewerModel.StatusUpdater);
+        }
+
+        PrepareFoldersModel();
+        await SelectedFile(null, ViewerModel.File?.FileName);
+    }
+
+    private void ExpandAll() {
+        if (ViewerModel.TreeExpandedKeys?.Count() != 0) return;
+        var allKeys = ViewerModel.RootFolder.Childs.Flatten()
+                         .Select(x => x.Key)
+                         .ToArray();
+        ViewerModel.TreeExpandedKeys = allKeys;
+    }
+
+    private void UpdateExpandedKey(TreeNode<Node<FilePatchedContents>> item)
+    {
+      var list = ViewerModel.TreeExpandedKeys == null ? new List<string>()
+                                                      : ViewerModel.TreeExpandedKeys.ToList();
+      if (item.Expanded == false) {
+        list.RemoveAll( x=> x.StartsWith(item.Key));
       }
       else
-      {
-        notification.Config.Message = msg;
-        await notification.UpdateConfigAsync();
-      }
-      await notification.OpenAsync();
+        list.Add(item.Key);
+
+      ViewerModel.TreeExpandedKeys = list.ToArray();
     }
-    await InvokeAsync(() => StateHasChanged());
-  }
-
-  private async Task OnEndWorkAsync(string msg)
-  {
-    SpinCounter--;
-    if (SpinCounter < 0) SpinCounter = 0;
-    if (notification != null && SpinCounter == 0)
-    {
-      await notification.CloseAsync();
-      notification = null;
-    }
-    await InvokeAsync(() => StateHasChanged());
-  }
-
-  private async void OnSelectedItemsChangedHandlerAsync(IEnumerable<PatchFile> values)
-  {
-    var v = values.ToList();
-    ViewerModel.CurrentSelectedPatches = v;
-    ViewerModel.File = null;
-
-    await PrepareView();
-  }
-
-  private async Task PrepareView()
-  {
-    await Task.WhenAll(
-      ViewerModel.CurrentSelectedPatches.Select((x) => x.EnsureLoad(ViewerModel.StatusUpdater)));
-
-    ViewerModel.CurrentPatchView = await PatchViewBuilder.CreateAsync(
-      ViewerModel.Workspace, ViewerModel.CurrentSelectedPatches, ViewerModel.StatusUpdater);
-    PrepareFoldersModel();
-  }
-
-  private void PrepareFoldersModel()
-  {
-    ViewerModel.CurrentPatchView.UpdateFiles();
-
-    var root = new Node<FilePatchedContents>();
-    var files = ViewerModel.CurrentPatchView.Files.ToList();
-    if( ViewerModel.CompareWithPatchView != null)
-    {
-      files.RemoveAll(x =>
-      {
-        var other = ViewerModel.CompareWithPatchView.Files.FirstOrDefault(z => x.FileName == z.FileName);
-        if (other == null) return true;
-        return x.Diff.IsEqualTo(other.Diff);
-      });
-    }
-
-    foreach (var file in files)
-    {
-      var parts = file.FileName.Split("/");
-      var node = root.Childs.GetOrCreateNode(parts);
-      node.Item = file;
-    }
-    ViewerModel.RootFolder = root;
-    this.StateHasChanged();
-  }
-
-  private async Task OnSelectedNodeChangedAsync(TreeNode<Node<FilePatchedContents>> selected)
-  {
-    await SelectedFile(null, selected.DataItem.Item.FileName);
-  }
-
-  private async Task SelectedFile(PatchFile patch, string fileName)
-  {
-    if (patch == null && string.IsNullOrEmpty(fileName) == false)
-    {
-      ViewerModel.File = null;
-      ViewerModel.CurrentFile = null;
-
-      ViewerModel.File = await PatchViewBuilder.BuildAsync(
-        ViewerModel.CurrentPatchView, fileName, ViewerModel.StatusUpdater);
-    }
-    else if (patch != null)
-    {
-      ViewerModel.CurrentFile = null;
-      await patch.EnsureLoad(ViewerModel.StatusUpdater);
-
-      var patchView = await PatchViewBuilder.CreateAsync(Workspace,
-        new[] { patch }, ViewerModel.StatusUpdater);
-
-      ViewerModel.CurrentFile = await PatchViewBuilder.BuildAsync(
-          patchView, fileName, ViewerModel.StatusUpdater);
-    }
-    else
-    {
-      ViewerModel.File = null;
-      ViewerModel.CurrentFile = null;
-    }
-
-    if (ViewerModel.CompareWith != null && ViewerModel.File != null)
-    {
-      var actualFile = ViewerModel.File;
-      ViewerModel.File = null;
-
-      var compareFile = await PatchViewBuilder.BuildAsync(
-        ViewerModel.CompareWithPatchView, fileName, ViewerModel.StatusUpdater);
-      ViewerModel.File = actualFile;
-      ViewerModel.File.OriginalContents = compareFile;
-    }
-
-    PrepareFoldersModel();
-    this.StateHasChanged();
-  }
-
-  public async void SelectCompareAsync(Workspace compareWith)
-  {
-    ViewerModel.CompareWith = null;
-    ViewerModel.CompareWithPatchView = null;
-
-    if (compareWith != null)
-    {
-      ViewerModel.CompareWith = compareWith;
-      await ViewerModel.CompareWith.EnsureLoadPatchesOrderAsync();
-
-      var selectedPatchs = ViewerModel.CompareWith.PatchsSet
-                                                  .Where(x => ViewerModel.CurrentSelectedPatches.Any(z => z.FileName == x.FileName))
-                                                  .ToList();
-      await ViewerModel.CompareWith.EnsureLoadPatches(selectedPatchs, ViewerModel.StatusUpdater);
-
-      ViewerModel.CompareWithPatchView = await PatchViewBuilder.CreateAsync(
-        ViewerModel.CompareWith, selectedPatchs, ViewerModel.StatusUpdater);
-    }
-
-    PrepareFoldersModel();
-    await SelectedFile(null, ViewerModel.File?.FileName);
-  }
 }

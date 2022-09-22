@@ -25,6 +25,8 @@ namespace SuperPatch.Models
 
     public Core.Status.StatusDelegate StatusUpdater { get; set; }
 
+    public string[] TreeExpandedKeys { get; set; }
+
     public int LeftPanelWidth = 300;
   }
 }

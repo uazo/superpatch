@@ -27,7 +27,7 @@ namespace SuperPatchUtils.Commands
           new Argument<string>("outputdir", "The output directory"),
           new Option("--verbose", "Verbose mode"),
           new Option("--createpatched", "Verbose mode"),
-          new Argument<string>("patchdir", "The patched output directory"),
+          new Option<string>("--patchdir", "The patched output directory"),
         }.WithHandler(typeof(BromiteRepo), nameof(Commands.BromiteRepo.DownloadRepoAsync))
       };
     }

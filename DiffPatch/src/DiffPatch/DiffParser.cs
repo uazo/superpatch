@@ -30,7 +30,7 @@ namespace DiffPatch
       schema = new HandlerCollection
             {
                     { @"^---", Ignore },
-                    { @"^diff\s", Start },
+										{ @"^diff\s", Start },
                     { @"^new file mode \d+$", NewFile },
                     { @"^deleted file mode \d+$", DeletedFile },
                     { @"^index\s[\da-zA-Z]+\.\.[\da-zA-Z]+(\s(\d+))?$", Index },
@@ -40,7 +40,8 @@ namespace DiffPatch
                     { @"^-", DeleteLine },
                     { @"^\+", AddLine },
                     { @"^Binary files (.+) and (.+) differ", BinaryDiff },
-                    { @"^rename to (.+)$", RenameFileTo },
+										{ @"^GIT binary patch", BinaryDiff },
+										{ @"^rename to (.+)$", RenameFileTo },
        };
     }
 
@@ -114,7 +115,9 @@ namespace DiffPatch
     {
       Restart();
       file.Type = FileChangeType.Modified;
-    }
+
+			current = new Chunk("", new ChunkRangeInfo());
+		}
 
     private void Chunk(string line, Match match)
     {

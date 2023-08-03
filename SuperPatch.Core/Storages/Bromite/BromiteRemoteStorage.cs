@@ -23,6 +23,7 @@ namespace SuperPatch.Core.Storages.Bromite
         (await http.GetStringAsync($"{PatchSourceUrl}/{workspace.CommitShaOrTag}/build/RELEASE"))
         .Replace("\n", "")
         .Replace("\r", "");
+			await base.FetchChromiumCommit();
     }
 
     public override async Task<byte[]> GetPatchAsync(string filename)

@@ -38,7 +38,8 @@ namespace SuperPatch.Core.Storages.Kiwi
                     .Select(x => x.Substring(x.IndexOf("=") + 1))
                     .ToList();
       ChromiumCommit = string.Join(".", build);
-    }
+			await base.FetchChromiumCommit();
+		}
 
     public override async Task<byte[]> GetPatchAsync(string filename)
     {

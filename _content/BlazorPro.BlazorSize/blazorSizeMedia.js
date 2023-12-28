@@ -25,7 +25,7 @@ export class BlazorSizeMedia {
         let mq = window.matchMedia(mediaQuery);
         let mediaQueryList = this.getMediaQueryListById(dotnetMql._id);
         //console.log(`[BlazorSize] MediaQuery Read - media: ${mq.media} matches: ${mq.matches}`);
-        mq.addListener(mediaQueryList.dotnetCallback);
+        mq.addEventListener('change', mediaQueryList.dotnetCallback);
         mediaQueryList.mediaQueries.push(mq);
         return { matches: mq.matches, media: mq.media };
     }
@@ -44,14 +44,14 @@ export class BlazorSizeMedia {
         let list = this.getMediaQueryListById(dotnetMql._id);
         let queries = list.mediaQueries;
         let toRemove = queries.find(q => q.media == mediaQuery);
-        toRemove === null || toRemove === void 0 ? void 0 : toRemove.removeListener(list.dotnetCallback);
+        toRemove === null || toRemove === void 0 ? void 0 : toRemove.removeEventListener('change', list.dotnetCallback);
         list.mediaQueries = queries.filter(q => q.media !== (toRemove === null || toRemove === void 0 ? void 0 : toRemove.media));
     }
     removeMediaQueryList(dotnetMql) {
         // Get the media query from the list
         let list = this.getMediaQueryListById(dotnetMql._id);
         // Remove all event handlers
-        list.mediaQueries.forEach(q => q.removeListener(list.dotnetCallback));
+        list.mediaQueries.forEach(q => q.removeEventListener('change', list.dotnetCallback));
         // Remove the item from the list
         this.mediaQueryLists = this.mediaQueryLists.filter(f => f.id !== dotnetMql._id);
     }

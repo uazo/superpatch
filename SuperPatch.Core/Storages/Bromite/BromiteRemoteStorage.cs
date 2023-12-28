@@ -42,7 +42,14 @@ namespace SuperPatch.Core.Storages.Bromite
     public override async Task<string> GetPatchesListAsync()
     {
       if (string.IsNullOrEmpty(ChromiumCommit)) await FetchChromiumCommit();
-      return await http.GetStringAsync($"{PatchSourceUrl}/{workspace.CommitShaOrTag}/build/bromite_patches_list.txt");
+			try
+			{
+				return await http.GetStringAsync($"{PatchSourceUrl}/{workspace.CommitShaOrTag}/build/cromite_patches_list.txt");
+			}
+			catch 
+			{
+				return await http.GetStringAsync($"{PatchSourceUrl}/{workspace.CommitShaOrTag}/build/bromite_patches_list.txt");
+			}
     }
   }
 }

@@ -41,6 +41,12 @@ namespace SuperPatch.Core.Storages
 				Url = "https://raw.githubusercontent.com/v8/v8",
 				RevisionIndex = "v8_revision"
 			});
+			subModulesInfos.Add(new SubModulesInfo()
+			{
+				Path = "third_party/devtools-frontend/src/",
+				Url = "https://raw.githubusercontent.com/ChromeDevTools/devtools-frontend",
+				RevisionIndex = "devtools_frontend_revision"
+			});
 		}
 
 		protected virtual async Task FetchChromiumCommit()

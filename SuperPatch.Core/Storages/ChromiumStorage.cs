@@ -47,6 +47,12 @@ namespace SuperPatch.Core.Storages
 				Url = "https://raw.githubusercontent.com/ChromeDevTools/devtools-frontend",
 				RevisionIndex = "devtools_frontend_revision"
 			});
+			subModulesInfos.Add(new SubModulesInfo()
+			{
+				Path = "third_party/skia/",
+				Url = "https://raw.githubusercontent.com/google/skia",
+				RevisionIndex = "skia_revision"
+			});
 		}
 
 		protected virtual async Task FetchChromiumCommit()

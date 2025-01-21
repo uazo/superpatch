@@ -23,7 +23,7 @@ jobs:
         run: dotnet publish -c Release -o bin SuperPatchUtils/SuperPatchUtils.csproj
 
       - name: Publish bin
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: SuperPatchUtils
           path: bin

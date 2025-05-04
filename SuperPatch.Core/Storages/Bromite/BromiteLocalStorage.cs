@@ -1,27 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
+﻿using System.Net.Http;
 using System.Threading.Tasks;
-using DiffPatch.Data;
 
 namespace SuperPatch.Core.Storages.Bromite
 {
-  public class BromiteLocalStorage : BromiteStorage
+  public class BromiteLocalStorage(Workspace workspace, string repoDirectory, HttpClient http) : BromiteStorage(workspace, http)
   {
-    private string repoDirectory;
-
-    public BromiteLocalStorage(Workspace workspace, string repoDirectory, HttpClient http)
-      : base(workspace, http)
-    {
-      this.repoDirectory = repoDirectory;
-    }
-
     public override string StorageName => $"Bromite on {repoDirectory}";
 
-    public override Storage Clone(Workspace wrk) => new BromiteLocalStorage(wrk, repoDirectory, http);
+    public override Storage Clone(Workspace wrk) => new BromiteLocalStorage(wrk, repoDirectory, Http);
 
     protected override async Task FetchChromiumCommit()
     {

@@ -33,8 +33,14 @@ namespace SuperPatchUtils
         cmd.AddCommand(command);
       foreach (var command in Commands.ConsolidateFlagList.GetCommands())
         cmd.AddCommand(command);
+			foreach (var command in Commands.JsonToExcel.GetCommands())
+				cmd.AddCommand(command);
+			foreach (var command in Commands.FetchVariations.GetCommands())
+				cmd.AddCommand(command);
+			foreach (var command in Commands.RebaseFixup.GetCommands())
+				cmd.AddCommand(command);
 
-      return await cmd.InvokeAsync(args);
+			return await cmd.InvokeAsync(args);
     }
   }
 }

@@ -23,7 +23,7 @@ namespace SuperPatch.Core
     {
       if (PatchsSet != null) return;
 
-      if (await Storage.EnsureLoadPatchesOrderAsync() == true)
+      if (await Storage.EnsureLoadPatchesOrderAsync())
         return;
 
       var patches_list = await Storage.GetPatchesListAsync();
@@ -32,7 +32,7 @@ namespace SuperPatch.Core
 
       var order = patches_list.Split("\n");
 
-      PatchsSet = new List<PatchFile>();
+      PatchsSet = [];
       foreach (var patchFileName in order)
       {
         if (string.IsNullOrWhiteSpace(patchFileName)) continue;
@@ -47,7 +47,7 @@ namespace SuperPatch.Core
         {
           FileName = patchFileName,
           Diff = null,
-          LoadDelegate = async(patchFile) =>
+          LoadDelegate = async (patchFile) =>
           {
             Console.WriteLine($"Loading {patchFileName}");
             var byteContent = await Storage.GetPatchAsync(patchFileName);
@@ -62,14 +62,14 @@ namespace SuperPatch.Core
       }
     }
 
-    public static bool IsLineToRemove( string line)
+    public static bool IsLineToRemove(string line)
     {
       return line == "-- " ||
              line == "2.17.1" ||
              line == "2.20.1";
     }
 
-    public List<IFileDiff> GetFilesName(List<PatchFile> patchsSet)
+    public static List<IFileDiff> GetFilesName(List<PatchFile> patchsSet)
     {
       var allFiles = patchsSet
                         .Where(x => x != null)
@@ -79,11 +79,10 @@ namespace SuperPatch.Core
                         .ToList();
 
       // remove new files from download
-      allFiles = allFiles
+      allFiles = [.. allFiles
                       .Where(x => x != null && x.From != "/dev/null")
                       .GroupBy(x => x.From)
-                      .Select(x => x.FirstOrDefault())
-                      .ToList();
+                      .Select(x => x.FirstOrDefault())];
       return allFiles;
     }
 
@@ -96,7 +95,7 @@ namespace SuperPatch.Core
     {
       if (patchsToLoad.All(x => x.Status == PatchStatus.Loaded)) return;
 
-      var w = await status?.BeginWork($"Loading patches for @{this.CommitShaOrTag}");
+      var w = await status?.BeginWork($"Loading patches for @{CommitShaOrTag}");
       try
       {
         await Task.WhenAll(patchsToLoad.Select((x) => x.EnsureLoad(status)));

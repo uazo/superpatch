@@ -1,17 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.CommandLine;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-
-using DiffPatch.Data;
-using SuperPatch.Core;
-using SuperPatch.Core.Storages;
-using SuperPatch.Core.Storages.Bromite;
 using SuperPatchUtils.Commands.Flags;
 using SuperPatchUtils.Commands.Utils;
 
@@ -22,17 +14,20 @@ namespace SuperPatchUtils.Commands
 
     internal static IEnumerable<Command> GetCommands()
     {
-      return new[]
-      {
+      return
+      [
         new Command("consolidate-flags")
         {
             new Argument<string>("sourcedirectory", "Flag list directory path"),
             new Argument<string>("outputfile", "Output file"),
             new Option("--verbose", "Verbose mode"),
         }.WithHandler(typeof(ConsolidateFlagList), nameof(ConsolidateFlagList.ConsolidateFlags)),
-      };
+      ];
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style",
+      "IDE0060:Remove unused parameter",
+      Justification = "<Pending>")]
     private static async Task<int> ConsolidateFlags(
         string sourcedirectory, string outputfile, bool verbose,
         IConsole console, CancellationToken cancellationToken)
@@ -48,7 +43,7 @@ namespace SuperPatchUtils.Commands
         {
           PathFile = x,
           FileName = System.IO.Path.GetFileName(x),
-          Version = System.IO.Path.GetFileName(x).Replace("flags-list-","").Split(".")
+          Version = System.IO.Path.GetFileName(x).Replace("flags-list-", "").Split(".")
         })
         .Where(x => System.IO.Path.GetFileName(x.FileName).StartsWith("flags-list-"))
         .OrderBy(x => int.Parse(x.Version[3]) * 1 +
@@ -58,13 +53,16 @@ namespace SuperPatchUtils.Commands
         .Select(x => x.PathFile)
         .ToList();
 
-      var result = new ConsolidateList();
-      result.Symbols = new List<Flag>();
-      result.Versions = new List<Flags.Version>();
+      var result = new ConsolidateList
+      {
+        Symbols = [],
+        Versions = []
+      };
+
       foreach (var file in orderedList)
       {
         var currentVersion = System.IO.Path.GetFileNameWithoutExtension(file).ToLower();
-        if( !currentVersion.StartsWith("flags-list-"))
+        if (!currentVersion.StartsWith("flags-list-"))
         {
           console.Out.Write($"Ignoring {currentVersion}\n");
           continue;
@@ -72,13 +70,13 @@ namespace SuperPatchUtils.Commands
 
         // get current version from file name
         currentVersion = currentVersion.Replace("flags-list-", "");
-        if (result.Versions.Count(x => x.Build == currentVersion) != 0)
+        if (result.Versions.Any(x => x.Build == currentVersion))
           continue;
 
-        var version = new Flags.Version()
+        var version = new Version()
         {
-            Id = result.Versions.Count() + 1,
-            Build = currentVersion,
+          Id = result.Versions.Count + 1,
+          Build = currentVersion,
         };
         result.Versions.Add(version);
 
@@ -96,7 +94,7 @@ namespace SuperPatchUtils.Commands
             presentFlag = new Flag()
             {
               Name = flag.Name,
-              Commits = new List<SymbolVersion>(),
+              Commits = [],
               FirstSeenAt = version.Id
             };
             result.Symbols.Add(presentFlag);

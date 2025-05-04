@@ -2,22 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using DiffPatch.Data;
 using SuperPatch.Core.GitHubApi;
 
 namespace SuperPatch.Core.Storages.Brave
 {
-  public class BraveStorage : ChromiumStorage
+  public partial class BraveStorage(Workspace wrk, HttpClient http, ApiService github) : ChromiumStorage(wrk, http)
   {
-    private ApiService github;
-
-    public BraveStorage(Workspace wrk, HttpClient http, ApiService github) : base(wrk, http)
-    {
-      this.github = github;
-    }
-
     public override string StorageName => "Brave";
 
     public override string GitHubApiEndpoint => @"https://api.github.com/repos/brave/brave-core";
@@ -31,7 +23,7 @@ namespace SuperPatch.Core.Storages.Brave
       throw new NotImplementedException();
     }
 
-    string _CacheDirectory;
+    private string _CacheDirectory;
     public override void SetCacheDirectory(string CacheDirectory)
     {
       _CacheDirectory = System.IO.Path.Combine(CacheDirectory, "brave");
@@ -42,11 +34,11 @@ namespace SuperPatch.Core.Storages.Brave
     {
       // https://raw.githubusercontent.com/brave/brave-core/master/patches/chrome-VERSION.patch
       var source =
-        (await http.GetStringAsync($"{PatchSourceUrl}/{workspace.CommitShaOrTag}/patches/chrome-VERSION.patch")).Split("\n");
+        (await Http.GetStringAsync($"{PatchSourceUrl}/{Workspace.CommitShaOrTag}/patches/chrome-VERSION.patch")).Split("\n");
 
       bool startExtract = false;
       int major = -1, minor = -1, build = -1, patch = -1;
-      foreach ( var line in source)
+      foreach (var line in source)
       {
         if (line.StartsWith("@@"))
         {
@@ -55,10 +47,10 @@ namespace SuperPatch.Core.Storages.Brave
         }
         if (!startExtract) continue;
 
-        if (major == -1 && line.Contains("MAJOR=")) major = int.Parse(line.Substring(7));
-        if (minor == -1 && line.Contains("MINOR=")) minor = int.Parse(line.Substring(7));
-        if (build == -1 && line.Contains("BUILD=")) build = int.Parse(line.Substring(7));
-        if (patch == -1 && line.Contains("PATCH=")) patch = int.Parse(line.Substring(7));
+        if (major == -1 && line.Contains("MAJOR=")) major = int.Parse(line[7..]);
+        if (minor == -1 && line.Contains("MINOR=")) minor = int.Parse(line[7..]);
+        if (build == -1 && line.Contains("BUILD=")) build = int.Parse(line[7..]);
+        if (patch == -1 && line.Contains("PATCH=")) patch = int.Parse(line[7..]);
       }
 
       ChromiumCommit = $"{major}.{minor}.{build}.{patch}"; // es 98.1.37.26
@@ -68,7 +60,7 @@ namespace SuperPatch.Core.Storages.Brave
 
     public override async Task<byte[]> GetFileAsync(IFileDiff file)
     {
-      if( file is RepoFileDiff)
+      if (file is RepoFileDiff)
         return await GetPatchAsync(file.From);
       else
         return await base.GetFileAsync(file);
@@ -86,7 +78,7 @@ namespace SuperPatch.Core.Storages.Brave
       byte[] contents = null;
       try
       {
-        contents = await http.GetByteArrayAsync($"{PatchSourceUrl}/{workspace.CommitShaOrTag}/{filename}");
+        contents = await Http.GetByteArrayAsync($"{PatchSourceUrl}/{Workspace.CommitShaOrTag}/{filename}");
       }
       catch
       {
@@ -96,7 +88,7 @@ namespace SuperPatch.Core.Storages.Brave
       {
         var localFile = System.IO.Path.Combine(_CacheDirectory, filename);
         var directory = System.IO.Path.GetDirectoryName(localFile);
-        if (System.IO.Directory.Exists(directory) == false)
+        if (!System.IO.Directory.Exists(directory))
           System.IO.Directory.CreateDirectory(directory);
 
         System.IO.File.WriteAllBytes(localFile, contents);
@@ -107,7 +99,7 @@ namespace SuperPatch.Core.Storages.Brave
 
     public override async Task<string> GetPatchesListAsync()
     {
-      var tree = await github.GetTreesAsync(workspace, workspace.CommitShaOrTag, false);
+      var tree = await github.GetTreesAsync(Workspace, Workspace.CommitShaOrTag, false);
 
       // download patches folder
       var patchsFolder = tree.tree.First(x => x.path == "patches");
@@ -118,10 +110,10 @@ namespace SuperPatch.Core.Storages.Brave
 
     public override async Task ProcessPatchedFileAsync(FilePatchedContents file)
     {
-      var regEx = new System.Text.RegularExpressions.Regex("#include \"(.*?)\"");
+      var regEx = MyRegex();
 
       var sourceBytes = await GetPatchAsync($"chromium_src/{file.FileName}");
-      if(sourceBytes == null)
+      if (sourceBytes == null)
       {
         return;
       }
@@ -132,7 +124,7 @@ namespace SuperPatch.Core.Storages.Brave
 
       var defines = new List<Define>();
       var lines = source.Split('\n');
-      var linesCount = lines.Count();
+      var linesCount = lines.Length;
       var processDefine = true;
       for (var lineNo = 0; lineNo != linesCount; lineNo++)
       {
@@ -144,24 +136,24 @@ namespace SuperPatch.Core.Storages.Brave
           {
             // found: #define
             lineNo = ParseDefine(lines, lineNo, defines, out var process);
-            if (process == false)
+            if (!process)
               file.Contents += line + "\n";
           }
           else if (line.Trim().StartsWith($"#include \"brave/"))
           {
             var groups = regEx.Match(line);
-            if( groups.Groups.Count == 2)
+            if (groups.Groups.Count == 2)
             {
-              var src = await GetFileAsync( new RepoFileDiff(null,null)
+              var src = await GetFileAsync(new RepoFileDiff(null, null)
               {
-                From = groups.Groups[1].Value.Substring("brave/".Length)
+                From = groups.Groups[1].Value["brave/".Length..]
               });
 
               file.Contents += $"\n// {line}\n\n";
               file.Contents += src;
               file.Contents += $"\n// end: {line}\n";
             }
-            else 
+            else
               file.Contents += line + "\n";
           }
           else if (line.Trim().StartsWith($"#include \"src/{file.FileName}\""))
@@ -183,16 +175,16 @@ namespace SuperPatch.Core.Storages.Brave
       }
     }
 
-    private int ParseDefine(string[] lines, int lineNo, List<Define> defines, out bool process)
+    private static int ParseDefine(string[] lines, int lineNo, List<Define> defines, out bool process)
     {
       var startLine = lineNo;
 
-      Define def = new Define();
+      var def = new Define();
       defines.Add(def);
 
-      var line = lines[startLine].Substring("#define ".Length);
+      var line = lines[startLine]["#define ".Length..];
       var fiels = line.Split(" ");
-      if (fiels.Count() == 1)
+      if (fiels.Length == 1)
       {
         def.Name = line.Trim();
       }
@@ -203,7 +195,7 @@ namespace SuperPatch.Core.Storages.Brave
         if (def.Definition.Trim() == "\\") def.Definition = string.Empty;
       }
 
-      if (line.Trim().EndsWith("\\") == false)
+      if (!line.Trim().EndsWith('\\'))
       {
         process = false;
         return lineNo;
@@ -214,14 +206,14 @@ namespace SuperPatch.Core.Storages.Brave
       {
         line = lines[startLine];
         if (string.IsNullOrWhiteSpace(line)) break;
-        if (line.Trim().EndsWith("\\") == false)
+        if (!line.Trim().EndsWith('\\'))
         {
           def.Definition += line.TrimEnd() + "\n";
           break;
         }
 
         if (def.Definition.Trim() == "\\") def.Definition = string.Empty;
-        def.Definition += line.Substring(0, line.Length-1).TrimEnd() + "\n";
+        def.Definition += line[..^1].TrimEnd() + "\n";
         startLine++;
       }
 
@@ -234,5 +226,8 @@ namespace SuperPatch.Core.Storages.Brave
       internal string Name;
       internal string Definition;
     }
+
+    [System.Text.RegularExpressions.GeneratedRegex("#include \"(.*?)\"")]
+    private static partial System.Text.RegularExpressions.Regex MyRegex();
   }
 }

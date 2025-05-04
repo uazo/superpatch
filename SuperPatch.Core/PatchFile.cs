@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using DiffPatch.Data;
 
@@ -30,7 +28,7 @@ namespace SuperPatch.Core
 
       Status = PatchStatus.Loading;
 
-      if(status != null)
+      if (status != null)
         await status?.InvokeAsync($"Loading {FileName}");
 
       Diff = await LoadDelegate(this);

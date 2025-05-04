@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SuperPatch.Core.Services
 {
@@ -30,7 +26,7 @@ namespace SuperPatch.Core.Services
 
     public new ApiResult<T> WithMessage(string message)
     {
-      this.Message = message;
+      Message = message;
       return this;
     }
   }
@@ -38,7 +34,7 @@ namespace SuperPatch.Core.Services
   public class ApiResult
   {
     public bool IsOk { get; set; } = false;
-    public string Message { get; internal protected set; }
+    public string Message { get; protected internal set; }
     public Exception Exception { get; internal set; }
 
     public static ApiResult WithMessage(string v)

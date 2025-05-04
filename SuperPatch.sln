@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31727.386
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35931.197 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiffPatch.Tests", "DiffPatch\src\DiffPatch.Tests\DiffPatch.Tests.csproj", "{8A61CF26-A3C6-47A1-9406-C04395803294}"
 EndProject

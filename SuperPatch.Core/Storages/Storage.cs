@@ -1,19 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using DiffPatch.Data;
 
 namespace SuperPatch.Core.Storages
 {
-  public abstract class Storage
+  public abstract class Storage(Workspace wrk)
   {
-    protected Workspace workspace { get; private set; }
-
-    public Storage(Workspace wrk)
-    {
-      this.workspace = wrk;
-    }
+    protected Workspace Workspace { get; private set; } = wrk;
 
     public abstract Task<byte[]> GetFileAsync(IFileDiff file);
     public abstract Task<byte[]> GetPatchAsync(string filename);
@@ -24,7 +16,7 @@ namespace SuperPatch.Core.Storages
 
     public abstract string LogoUrl { get; }
 
-    internal protected virtual Task<bool> EnsureLoadPatchesOrderAsync() => Task.FromResult(false);
+    protected internal virtual Task<bool> EnsureLoadPatchesOrderAsync() => Task.FromResult(false);
 
     public abstract Storage Clone(Workspace wrk);
 

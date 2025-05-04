@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SuperPatch.Core.Status
@@ -18,7 +15,7 @@ namespace SuperPatch.Core.Status
 
     public class WorkRef
     {
-      StatusDelegate _parent;
+      private readonly StatusDelegate _parent;
 
       internal WorkRef(StatusDelegate parent)
       {
@@ -34,7 +31,7 @@ namespace SuperPatch.Core.Status
 
     public async Task InvokeAsync(string msg)
     {
-      if(OnChangedAsync != null)
+      if (OnChangedAsync != null)
         await OnChangedAsync(msg);
     }
 
@@ -44,6 +41,5 @@ namespace SuperPatch.Core.Status
         await OnBeginWorkAsync(msg);
       return new WorkRef(this);
     }
-
   }
 }

@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.CommandLine;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 using DiffPatch.Data;
 using SuperPatch.Core;
-using SuperPatch.Core.Status;
-using SuperPatch.Core.Storages;
 using SuperPatch.Core.Storages.Bromite;
 using SuperPatchUtils.Commands.Utils;
 
@@ -20,7 +14,7 @@ namespace SuperPatchUtils.Commands
   {
     internal static IEnumerable<Command> GetCommands()
     {
-      return new[] {
+      return [
         new Command("bromite")
         {
           new Argument<string>("commitshaortag", "Bromite Commit hash"),
@@ -29,7 +23,7 @@ namespace SuperPatchUtils.Commands
           new Option("--createpatched", "Verbose mode"),
           new Option<string>("--patchdir", "The patched output directory"),
         }.WithHandler(typeof(BromiteRepo), nameof(Commands.BromiteRepo.DownloadRepoAsync))
-      };
+      ];
     }
 
     private static async Task<int> DownloadRepoAsync(
@@ -43,7 +37,7 @@ namespace SuperPatchUtils.Commands
         return 1;
       }
 
-      var wrkBromite = 
+      var wrkBromite =
         await DownloadAsync(commitshaortag, outputdir, verbose, console, cancellationToken);
 
       if (createpatched)
@@ -54,6 +48,9 @@ namespace SuperPatchUtils.Commands
       return 0;
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style",
+      "IDE0060:Remove unused parameter",
+      Justification = "<Pending>")]
     public static async Task<RepoData> DownloadAsync(
                 string commitshaortag, string outputdir, bool verbose,
                 IConsole console, CancellationToken cancellationToken)
@@ -65,12 +62,12 @@ namespace SuperPatchUtils.Commands
       var httpClient = new System.Net.Http.HttpClient();
       httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (compatible; SuperPatch/1.0)");
       wrk.Storage = new BromiteRemoteStorage(wrk, httpClient);
-     
+
       await wrk.EnsureLoadPatchesOrderAsync();
 
       await wrk.EnsureLoadAllPatches(new SuperPatch.Core.Status.NoopStatusDelegate());
 
-      var allFiles = wrk.GetFilesName(wrk.PatchsSet);
+      var allFiles = Workspace.GetFilesName(wrk.PatchsSet);
       var failed = new List<IFileDiff>();
 
       return await Commons.DoFetchAndStore(outputdir, wrk, allFiles, failed);

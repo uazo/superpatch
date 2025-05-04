@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,12 +16,12 @@ using SuperPatchUtils.Commands.Utils;
 
 namespace SuperPatchUtils.Commands
 {
-  public class ParseFlagList
+  public partial class ParseFlagList
   {
     internal static IEnumerable<Command> GetCommands()
     {
-      return new[]
-      {
+      return
+      [
         new Command("parse-flags")
         {
           new Argument<string>("commitshaortag", "Bromite Commit hash or tag"),
@@ -30,9 +29,12 @@ namespace SuperPatchUtils.Commands
           new Argument<string>("outputdirectory", "Output directory"),
           new Option("--verbose", "Verbose mode"),
         }.WithHandler(typeof(ParseFlagList), nameof(ParseFlagList.ParseFile)),
-      };
+      ];
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style",
+      "IDE0060:Remove unused parameter",
+      Justification = "<Pending>")]
     private static async Task<int> ParseFile(
             string commitshaortag, string sourcefile, string outputdirectory, bool verbose,
             IConsole console, CancellationToken cancellationToken)
@@ -99,26 +101,26 @@ namespace SuperPatchUtils.Commands
 
     private static void ParseValueFromAboutFlags(List<SymbolsModel> flagList, string bromitePatchedDirectory, IConsole console)
     {
-      var regEx = new System.Text.RegularExpressions.Regex(",\\s*(?![^()]*\\))(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
+      var regEx = MyRegex();
 
       var aboutFlags = System.IO.File.ReadAllText(Commons.CombineDirectory(bromitePatchedDirectory, "chrome/browser/about_flags.cc"));
       var lines = aboutFlags.Split("\n");
 
-      var startIndex = searchForLine(lines, "const FeatureEntry kFeatureEntries[] = {");
+      var startIndex = SearchForLine(lines, "const FeatureEntry kFeatureEntries[] = {");
       if (startIndex == -1) throw new ApplicationException("kFeatureEntries not found");
 
       startIndex++;
-      var linesCount = lines.Count();
+      var linesCount = lines.Length;
       while (startIndex < linesCount)
       {
         var line = lines[startIndex];
         if (line == "};")
           break;
 
-        if (line.Contains("{"))
+        if (line.Contains('{'))
         {
           // simply find '}'
-          var endIndex = searchForLine(lines, "}", startIndex);
+          var endIndex = SearchForLine(lines, "}", startIndex);
           if (endIndex == -1) throw new ApplicationException($"FATAL: could not find terminator from {startIndex}");
 
           // get values and remove comments (very simple mode!)
@@ -129,7 +131,7 @@ namespace SuperPatchUtils.Commands
               if (!x.Contains("//"))
                 return x;
               else
-                return x.Substring(0, x.IndexOf("//"));
+                return x[..x.IndexOf("//")];
             })
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Select(x => x.Trim()));
@@ -160,14 +162,14 @@ namespace SuperPatchUtils.Commands
               var flagName = fields[4].Split('(', ')')[1]
                                       .Split(":")
                                       .Reverse().First();
-              if (flagName.Contains(",")) flagName = flagName.Split(',').First();
+              if (flagName.Contains(',')) flagName = flagName.Split(',').First();
               var flag = flagList.FirstOrDefault(x => x.Name == flagName);
               if (flag != null)
               {
                 flag.AboutFlagDescription = fields[2].Replace(",", string.Empty);
                 flag.AboutFlagOs = fields[3].Replace(",", string.Empty);
 
-                if (fields[0].Contains("\""))
+                if (fields[0].Contains('"'))
                 {
                   flag.AboutFlagName = fields[0].Replace("\"", string.Empty).Replace(",", string.Empty);
                 }
@@ -226,7 +228,7 @@ namespace SuperPatchUtils.Commands
       var failed = new List<IFileDiff>();
       await Commons.DoFetchAndStore(chromiumDirectory, wrkChromium, allFiles, failed);
 
-      if (failed.Count() != 0)
+      if (failed.Count != 0)
       {
         console.Out.Write("Some files are missings, maybe are specific Bromite files:\n");
         foreach (var f in failed)
@@ -239,11 +241,11 @@ namespace SuperPatchUtils.Commands
                                    IConsole console,
                                    Action<SymbolsModel, string /*value*/> assign)
     {
-      Action<SymbolsModel, string /*value*/> logAndAssign = (model, value) =>
+      void logAndAssign(SymbolsModel model, string value)
       {
         console.Out.Write($"{model.Name} = {value}\n");
         assign(model, value);
-      };
+      }
 
       foreach (var flag in flagList)
       {
@@ -254,8 +256,8 @@ namespace SuperPatchUtils.Commands
         var lines = content.Split("\n");
 
         var searchFor = $"base::Feature {flag.Name}";
-        var declLineIndex = searchForLine(lines, searchFor);
-        if(declLineIndex != -1 )
+        var declLineIndex = SearchForLine(lines, searchFor);
+        if (declLineIndex != -1)
         {
           for (; ; )
           {
@@ -270,7 +272,7 @@ namespace SuperPatchUtils.Commands
               logAndAssign(flag, "FEATURE_DISABLED_BY_DEFAULT");
               break;
             }
-            else if (declLine.Contains("}"))
+            else if (declLine.Contains('}'))
             {
               break;
             }
@@ -280,10 +282,10 @@ namespace SuperPatchUtils.Commands
       }
     }
 
-    private static int searchForLine(string[] lines, string substring, int startIndex = 0)
+    private static int SearchForLine(string[] lines, string substring, int startIndex = 0)
     {
-      var linesCount = lines.Count();
-      for(var index = startIndex; index < linesCount; index++)
+      var linesCount = lines.Length;
+      for (var index = startIndex; index < linesCount; index++)
       {
         var line = lines[index];
         if (line.Contains(substring)) return index;
@@ -324,9 +326,8 @@ namespace SuperPatchUtils.Commands
 
       public ModelLoader()
       {
-        properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                     .Where(x => x.GetCustomAttribute<IgnoreLoaderAttribute>() == null)
-                     .ToArray();
+        properties = [.. typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                  .Where(x => x.GetCustomAttribute<IgnoreLoaderAttribute>() == null)];
       }
 
       internal int Load(T model, string[] fields, int currentIndex)
@@ -344,7 +345,7 @@ namespace SuperPatchUtils.Commands
           {
             if (int.TryParse(field, out var result))
               properties[currentIndex].SetValue(model, result);
-            else if( string.IsNullOrEmpty(field))
+            else if (string.IsNullOrEmpty(field))
               properties[currentIndex].SetValue(model, 0);
             else
               throw new ApplicationException($"Value '{field}' is not an integer");
@@ -358,5 +359,8 @@ namespace SuperPatchUtils.Commands
         return currentIndex;
       }
     }
+
+    [System.Text.RegularExpressions.GeneratedRegex(",\\s*(?![^()]*\\))(?=([^\"]*\"[^\"]*\")*[^\"]*$)")]
+    private static partial System.Text.RegularExpressions.Regex MyRegex();
   }
 }

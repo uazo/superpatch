@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SuperPatch.Core.GitHubApi
+﻿namespace SuperPatch.Core.GitHubApi
 {
   // response for
   // https://api.github.com/repos/bromite/bromite/commits/{commitid}
-  public class CommitResponse 
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "JSON data")]
+  public class CommitResponse
   {
     public string sha { get; set; }
     public string node_id { get; set; }
@@ -16,6 +11,8 @@ namespace SuperPatch.Core.GitHubApi
 
     public Commit commit { get; set; }
   }
+
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "JSON data")]
   public class Commit
   {
     public string message { get; set; }
@@ -23,6 +20,7 @@ namespace SuperPatch.Core.GitHubApi
 
   }
 
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "JSON data")]
   public class Tree
   {
     public string sha { get; set; }
@@ -30,6 +28,7 @@ namespace SuperPatch.Core.GitHubApi
     public TreeItem[] tree { get; set; }
   }
 
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "JSON data")]
   public class TreeItem
   {
     public string path { get; set; }
@@ -43,14 +42,16 @@ namespace SuperPatch.Core.GitHubApi
 
   // response for
   // https://api.github.com/search/issues?q={commitid}
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "JSON data")]
   public class SearchResponse
   {
     public int total_count { get; set; }
     public bool incomplete_results { get; set; }
 
-    public SearchResponseItem[] items {get;set;}
+    public SearchResponseItem[] items { get; set; }
   }
 
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "JSON data")]
   public class SearchResponseItem
   {
     public string url { get; set; }
@@ -59,11 +60,13 @@ namespace SuperPatch.Core.GitHubApi
     public PullRequest pull_request { get; set; }
   }
 
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "JSON data")]
   public class Head
   {
     public string sha { get; set; }
   }
 
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "JSON data")]
   public class PullRequestFile
   {
     public string sha { get; set; }
@@ -71,6 +74,7 @@ namespace SuperPatch.Core.GitHubApi
     public string contents_url { get; set; }
   }
 
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "JSON data")]
   public class PullRequestFileContents
   {
     public string sha { get; set; }
@@ -79,6 +83,7 @@ namespace SuperPatch.Core.GitHubApi
     public string download_url { get; set; }
   }
 
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "JSON data")]
   public class PullRequest
   {
     public string url { get; set; }
@@ -87,12 +92,13 @@ namespace SuperPatch.Core.GitHubApi
     public string diff_url { get; set; }
     public string patch_url { get; set; }
     public string merge_commit_sha { get; set; }
-    
+
     public Head head { get; set; }
   }
 
   // response
   // for https://api.github.com/repos/bromite/bromite/pulls/{pullid}/commits
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "JSON data")]
   public class PullRequestCommitResponse
   {
     public string sha { get; set; }
@@ -100,6 +106,7 @@ namespace SuperPatch.Core.GitHubApi
     public Parents[] parents { get; set; }
   }
 
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "JSON data")]
   public class Parents
   {
     public string sha { get; set; }

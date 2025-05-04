@@ -4,13 +4,10 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 using DiffPatch.Data;
 using SuperPatch.Core;
-using SuperPatch.Core.Storages;
 
 namespace SuperPatchUtils.Commands.Utils
 {
@@ -22,7 +19,7 @@ namespace SuperPatchUtils.Commands.Utils
 
     public static async Task<RepoData> DoFetchAndStore(string outputdir, Workspace wrk, List<IFileDiff> fileToDownload, List<IFileDiff> failed)
     {
-      int fileCount = fileToDownload.Count();
+      int fileCount = fileToDownload.Count;
       int currentFile = 0;
       foreach (var file in fileToDownload)
       {
@@ -75,11 +72,11 @@ namespace SuperPatchUtils.Commands.Utils
       var previousIndex = 0;
       foreach (var index in indexes.OrderBy(i => i))
       {
-        yield return @string.Substring(previousIndex, index - previousIndex);
+        yield return @string[previousIndex..index];
         previousIndex = index;
       }
 
-      yield return @string.Substring(previousIndex);
+      yield return @string[previousIndex..];
     }
 
     public static async Task PatchFiles(RepoData repo,
@@ -99,7 +96,7 @@ namespace SuperPatchUtils.Commands.Utils
           console.Out.Write($"[{indexFile}/{countFiles}] Patching {patchedFileName}\n");
 
           var view = await PatchViewBuilder.CreateAsync(repo.Workspace, repo.Workspace.PatchsSet, statusDelegate);
-          view.CurrentPatchs = new List<PatchFile>();
+          view.CurrentPatchs = [];
           var patched = await PatchViewBuilder.BuildAsync(view, file.To, statusDelegate);
           string directory = System.IO.Path.GetDirectoryName(patchedFileName);
           if (System.IO.Directory.Exists(directory) == false)

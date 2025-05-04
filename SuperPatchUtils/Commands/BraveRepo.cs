@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.CommandLine;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 using DiffPatch.Data;
 using SuperPatch.Core;
 using SuperPatch.Core.GitHubApi;
-using SuperPatch.Core.Storages;
 using SuperPatch.Core.Storages.Brave;
 using SuperPatchUtils.Commands.Utils;
 
@@ -19,14 +15,14 @@ namespace SuperPatchUtils.Commands
   {
     internal static IEnumerable<Command> GetCommands()
     {
-      return new[] {
+      return [
         new Command("brave")
         {
           new Argument<string>("commitshaortag", "Brave Commit hash"),
           new Argument<string>("outputdir", "The output directory"),
           new Option("--verbose", "Verbose mode"),
         }.WithHandler(typeof(BraveRepo), nameof(Commands.BraveRepo.DownloadRepoAsync))
-      };
+      ];
     }
 
     private static async Task<int> DownloadRepoAsync(
@@ -37,6 +33,9 @@ namespace SuperPatchUtils.Commands
       return 0;
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style",
+      "IDE0060:Remove unused parameter",
+      Justification = "<Pending>")]
     public static async Task<RepoData> DownloadAsync(
             string commitshaortag, string outputdir, bool verbose,
             IConsole console, CancellationToken cancellationToken)
@@ -48,7 +47,7 @@ namespace SuperPatchUtils.Commands
       var httpClient = new System.Net.Http.HttpClient();
       var github = new ApiService(httpClient);
       httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (compatible; SuperPatch/1.0)");
-      
+
       var storage = new BraveStorage(wrk, httpClient, github);
       var tempDirectory = Commons.CombineDirectory(outputdir, "temp");
       storage.SetCacheDirectory(tempDirectory);
@@ -63,7 +62,7 @@ namespace SuperPatchUtils.Commands
       await wrk.EnsureLoadAllPatches(new SuperPatch.Core.Status.NoopStatusDelegate());
 
       // download chromium sources
-      var allFiles = wrk.GetFilesName(wrk.PatchsSet);
+      var allFiles = Workspace.GetFilesName(wrk.PatchsSet);
       var failed = new List<IFileDiff>();
       var repo = await Commons.DoFetchAndStore(tempDirectory, wrk, allFiles, failed);
 

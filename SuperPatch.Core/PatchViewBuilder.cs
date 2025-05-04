@@ -16,7 +16,7 @@ namespace SuperPatch.Core
 
     public void UpdateFiles()
     {
-      Files = new List<FilePatchedContents>();
+      Files = [];
       foreach (var currentPatch in CurrentPatchs)
       {
         if (currentPatch.Status == PatchStatus.Loaded)
@@ -25,7 +25,7 @@ namespace SuperPatch.Core
           {
             var content = new FilePatchedContents()
             {
-              FileName = file.Type == DiffPatch.Data.FileChangeType.Add ? file.To : file.From,
+              FileName = file.Type == FileChangeType.Add ? file.To : file.From,
               ChangeType = file.Type,
               Status = FileContentsStatus.NotLoaded,
               Diff = file
@@ -103,7 +103,7 @@ namespace SuperPatch.Core
                 file.OriginalContents.Contents = patched;
                 file.Contents = patched;
 
-                if (file.Applied == null) file.Applied = new List<PatchFile>();
+                file.Applied ??= [];
                 file.Applied.Insert(0, patch);
               }
             }

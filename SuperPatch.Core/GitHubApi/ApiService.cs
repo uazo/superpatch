@@ -1,22 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SuperPatch.Core.GitHubApi
 {
-  public class ApiService
+  public class ApiService(HttpClient httpClient)
   {
-    private HttpClient httpClient { get; set; }
-
-    public ApiService(HttpClient httpClient)
-    {
-      this.httpClient = httpClient;
-    }
-
     public async Task<CommitResponse> CommitForSha(Workspace wrk, string sha)
     {
       try
@@ -129,7 +119,7 @@ namespace SuperPatch.Core.GitHubApi
       }
     }
 
-  public async Task<List<PullRequestCommitResponse>> GetCommitsForPull(string pullurl)
+    public async Task<List<PullRequestCommitResponse>> GetCommitsForPull(string pullurl)
     {
       try
       {
@@ -144,6 +134,6 @@ namespace SuperPatch.Core.GitHubApi
         return null;
       }
     }
-    
+
   }
 }

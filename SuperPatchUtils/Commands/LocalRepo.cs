@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.IO;
-using System.Reflection;
 using System.Threading;
-
-using DiffPatch.Data;
+using System.Threading.Tasks;
 using SuperPatch.Core;
-using SuperPatch.Core.Storages;
 using SuperPatch.Core.Storages.Bromite;
 using SuperPatchUtils.Commands.Utils;
 
@@ -21,17 +12,20 @@ namespace SuperPatchUtils.Commands
   {
     internal static IEnumerable<Command> GetCommands()
     {
-      return new[]
-      {
+      return
+      [
         new Command("local")
         {
           new Argument<string>("repodir", "Bromite repo local directory"),
           new Argument<string>("outputdir", "The output directory"),
           new Option("--verbose", "Verbose mode"),
         }.WithHandler(typeof(LocalRepo), nameof(Commands.LocalRepo.DownloadAsync)),
-      };
+      ];
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style",
+      "IDE0060:Remove unused parameter",
+      Justification = "<Pending>")]
     private static async Task<int> DownloadAsync(
             string repodir, string outputdir, bool verbose,
             IConsole console, CancellationToken cancellationToken)

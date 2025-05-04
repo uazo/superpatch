@@ -1,51 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using DiffPatch.Data;
 
 namespace SuperPatch.Core.Storages.Kiwi
 {
-  public class KiwiRemoteStorage : KiwiStorage
+  public class KiwiRemoteStorage(Workspace wrk, HttpClient http, GitHubApi.ApiService githupService) : KiwiStorage(wrk, http)
   {
-    GitHubApi.ApiService githupService;
-
-    public KiwiRemoteStorage(Workspace wrk, HttpClient http, GitHubApi.ApiService githupService)
-      : base(wrk, http)
-    {
-      this.githupService = githupService;
-    }
-
     public override string StorageName => $"Remote Kiwi repo";
 
     protected virtual string PatchSourceUrl => $"https://raw.githubusercontent.com/{KiwiRepoName}";
 
-    public override Storage Clone(Workspace wrk) => new KiwiRemoteStorage(wrk, http, githupService);
+    public override Storage Clone(Workspace wrk) => new KiwiRemoteStorage(wrk, Http, githupService);
 
     protected override async Task FetchChromiumCommit()
     {
-      if (string.IsNullOrEmpty(ChromiumCommit) == false)
+      if (!string.IsNullOrEmpty(ChromiumCommit))
         return;
 
       ChromiumCommit = "";
 
-      var content = await http.GetStringAsync($"{PatchSourceUrl}/{workspace.CommitShaOrTag}/CHROMIUM_VERSION");
+      var content = await Http.GetStringAsync($"{PatchSourceUrl}/{Workspace.CommitShaOrTag}/CHROMIUM_VERSION");
       var build = content
                     .Split("\n")
                     .Where(x => !string.IsNullOrWhiteSpace(x))
-                    .Select(x => x.Substring(x.IndexOf("=") + 1))
+                    .Select(x => x[(x.IndexOf('=') + 1)..])
                     .ToList();
       ChromiumCommit = string.Join(".", build);
-			await base.FetchChromiumCommit();
-		}
+      await base.FetchChromiumCommit();
+    }
 
     public override async Task<byte[]> GetPatchAsync(string filename)
     {
       try
       {
-        return await http.GetByteArrayAsync($"{PatchSourceUrl}/{workspace.CommitShaOrTag}/build/patches/{filename}");
+        return await Http.GetByteArrayAsync($"{PatchSourceUrl}/{Workspace.CommitShaOrTag}/build/patches/{filename}");
       }
       catch
       {
@@ -58,12 +48,14 @@ namespace SuperPatch.Core.Storages.Kiwi
 
     protected internal override async Task<bool> EnsureLoadPatchesOrderAsync()
     {
-      workspace.PatchsSet = new List<PatchFile>();
-      workspace.PatchsSet.Add(new PatchFile()
-      {
-        FileName = "sources",
-        LoadDelegate = PatchFileLoadDelegate
-      });
+      Workspace.PatchsSet =
+      [
+        new PatchFile()
+        {
+          FileName = "sources",
+          LoadDelegate = PatchFileLoadDelegate
+        },
+      ];
 
       return await Task.FromResult(true);
     }
@@ -75,34 +67,37 @@ namespace SuperPatch.Core.Storages.Kiwi
 
     private async Task<IEnumerable<FileDiff>> LoadSourceSet()
     {
-      var tree = await githupService.GetTreesAsync(workspace, workspace.CommitShaOrTag, true);
+      var tree = await githupService.GetTreesAsync(Workspace, Workspace.CommitShaOrTag, true);
       return ToFileDiff(null, tree);
     }
 
-    private IEnumerable<FileDiff> ToFileDiff(IFileDiff parent, GitHubApi.Tree tree)
+    private static List<FileDiff> ToFileDiff(IFileDiff parent, GitHubApi.Tree tree)
     {
       var folders = tree.tree
                         .Where(x => x.isTree()).OrderBy(x => x.path)
-                        .Select(x => new KiwiFileDiff(parent, x)).ToList();
+                        .Select(x => new KiwiFileDiff(parent, x))
+                        .Cast<FileDiff>()
+                        .ToList();
       var files = tree.tree
                         .Where(x => x.isBlob()).OrderBy(x => x.path)
-                        .Select(x => new KiwiFileDiff(parent, x)).ToList();
+                        .Select(x => new KiwiFileDiff(parent, x))
+                        .Cast<FileDiff>()
+                        .ToList();
 
-      return folders.Union(files).ToList();
+      return [.. folders.Union(files)];
     }
 
     public override async Task<byte[]> GetFileAsync(IFileDiff file)
     {
-      var kiwiFile = file as KiwiFileDiff;
-      if (kiwiFile != null)
+      if (file is KiwiFileDiff kiwiFile)
       {
         if (kiwiFile.treeItem.isTree())
         {
           if (kiwiFile.IsLoaded) return null;
 
-          var patch = workspace.PatchsSet.First();
+          var patch = Workspace.PatchsSet.First();
           var tree = await githupService.GetTreesAsync(kiwiFile.treeItem.url);
-          patch.Diff = patch.Diff.Union(ToFileDiff(file, tree)).ToList();
+          patch.Diff = [.. patch.Diff.Union(ToFileDiff(file, tree))];
           kiwiFile.IsLoaded = true;
           return null;
         }
@@ -122,7 +117,7 @@ namespace SuperPatch.Core.Storages.Kiwi
     {
       try
       {
-        return await http.GetStringAsync($"{PatchSourceUrl}/{workspace.CommitShaOrTag}/{file.FileName}");
+        return await Http.GetStringAsync($"{PatchSourceUrl}/{Workspace.CommitShaOrTag}/{file.FileName}");
       }
       catch
       {
@@ -131,9 +126,7 @@ namespace SuperPatch.Core.Storages.Kiwi
     }
   }
 
-  public class KiwiFileDiff : RepoFileDiff
+  public class KiwiFileDiff(IFileDiff parent, GitHubApi.TreeItem treeItem) : RepoFileDiff(parent, treeItem)
   {
-    public KiwiFileDiff(IFileDiff parent, GitHubApi.TreeItem treeItem) :
-      base(parent, treeItem) { }
   }
 }

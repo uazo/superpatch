@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -27,14 +28,14 @@ namespace SuperPatchUtils.Commands
       ];
     }
 
-    private class ElementList
+    private sealed class ElementList
     {
       public List<Elements> Elements { get; set; }
 
       public string Folder { get; set; }
     }
 
-    private class Elements
+    private sealed class Elements
     {
       public string Key { get; internal set; }
       public List<ElementValue> ValueList { get; internal set; }
@@ -46,7 +47,7 @@ namespace SuperPatchUtils.Commands
       }
     }
 
-    private class ElementValue
+    private sealed class ElementValue
     {
       public string Value { get; internal set; }
       public List<string> DevicesName { get; internal set; }
@@ -57,14 +58,14 @@ namespace SuperPatchUtils.Commands
       }
     }
 
-    private class ElementGroup
+    private sealed class ElementGroup
     {
       public string Folder { get; set; }
       public string DeviceName { get; internal set; }
       public string Caption { get; internal set; }
     }
 
-    private class ElementOuput
+    private sealed class ElementOuput
     {
       public List<ElementList> Elements { get; set; }
       public List<string> FoldersName { get; set; }
@@ -72,7 +73,7 @@ namespace SuperPatchUtils.Commands
       public List<string> Keys { get; set; }
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style",
+    [SuppressMessage("Style",
       "IDE0060:Remove unused parameter",
       Justification = "<Pending>")]
     private static async Task<int> Start(
@@ -91,10 +92,10 @@ namespace SuperPatchUtils.Commands
       };
       foreach (string folder in allFolder)
       {
-        string testName = folder.Replace(sourcedir, "")
-                        .Split(Path.DirectorySeparatorChar)
-                        .Where(x => !string.IsNullOrWhiteSpace(x))
-                        .FirstOrDefault();
+        string testName =
+          folder.Replace(sourcedir, "")
+          .Split(Path.DirectorySeparatorChar)
+          .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x));
 
         var elementList = new ElementList()
         {
@@ -268,7 +269,7 @@ namespace SuperPatchUtils.Commands
           dataCol++;
         }
 
-        pck.SaveAs(output);
+        await pck.SaveAsAsync(output, cancellationToken);
       }
 
       result.Elements
@@ -290,9 +291,9 @@ namespace SuperPatchUtils.Commands
         });
 
       string jsonOut = JsonSerializer.Serialize(result);
-      System.IO.File.WriteAllText(
+      await File.WriteAllTextAsync(
         Path.ChangeExtension(output, ".json"),
-        jsonOut);
+        jsonOut, cancellationToken);
 
       return 0;
     }
@@ -423,6 +424,7 @@ namespace SuperPatchUtils.Commands
         }
         catch (Exception)
         {
+          // no matter
         }
       }
       else if (v.ValueKind == JsonValueKind.Array)

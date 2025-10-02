@@ -1,17 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using SuperPatch.Core.Server.Infrastructure.Context;
 using SuperPatchUtils.Commands.Flags;
 using SuperPatchUtils.Commands.Utils;
 
 namespace SuperPatchUtils.Commands
 {
-  public class ConsolidateFlagList
+  public static class ConsolidateFlagList
   {
-
     internal static IEnumerable<Command> GetCommands()
     {
       return
@@ -21,15 +23,18 @@ namespace SuperPatchUtils.Commands
             new Argument<string>("sourcedirectory", "Flag list directory path"),
             new Argument<string>("outputfile", "Output file"),
             new Option("--verbose", "Verbose mode"),
+            new Option("--db", "Upload to Sql Server"),
         }.WithHandler(typeof(ConsolidateFlagList), nameof(ConsolidateFlagList.ConsolidateFlags)),
       ];
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style",
+    [SuppressMessage("Style",
       "IDE0060:Remove unused parameter",
       Justification = "<Pending>")]
+    [SuppressMessage("Minor Code Smell", "S2737:\"catch\" clauses should do more than rethrow",
+      Justification = "<Pending>")]
     private static async Task<int> ConsolidateFlags(
-        string sourcedirectory, string outputfile, bool verbose,
+        string sourcedirectory, string outputfile, bool verbose, bool db,
         IConsole console, CancellationToken cancellationToken)
     {
       if (!System.IO.Directory.Exists(sourcedirectory))
@@ -61,6 +66,7 @@ namespace SuperPatchUtils.Commands
 
       foreach (var file in orderedList)
       {
+        console.Out.Write($"Parsing {file}\n");
         var currentVersion = System.IO.Path.GetFileNameWithoutExtension(file).ToLower();
         if (!currentVersion.StartsWith("flags-list-"))
         {
@@ -73,17 +79,19 @@ namespace SuperPatchUtils.Commands
         if (result.Versions.Any(x => x.Build == currentVersion))
           continue;
 
+        var content = await System.IO.File.ReadAllTextAsync(file, cancellationToken);
+        var flagList = JsonSerializer.Deserialize<List<SymbolsModel>>(content);
+
         var version = new Version()
         {
           Id = result.Versions.Count + 1,
           Build = currentVersion,
+          FlagList = flagList
         };
         result.Versions.Add(version);
 
-        var content = System.IO.File.ReadAllText(file);
-        var flagList = JsonSerializer.Deserialize<List<SymbolsModel>>(content);
-
         // find new flags
+        console.Out.Write($"  found {flagList.Count} flags\n");
         foreach (var flag in flagList)
         {
           var Status = SymbolStatus.None;
@@ -111,9 +119,46 @@ namespace SuperPatchUtils.Commands
 
       // save json
       string json = JsonSerializer.Serialize(result);
-      System.IO.File.WriteAllText(
+      await System.IO.File.WriteAllTextAsync(
         outputfile,
-        json);
+        json, cancellationToken);
+
+      // upload to db
+      if (db)
+      {
+        try
+        {
+          foreach (var version in result.Versions)
+          {
+            var context = DataContext.GetContext();
+            if (await context.Versions.CountAsync(x => x.Build == version.Build) == 0)
+            {
+              using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+
+              console.Out.Write($"Saving {version.Build}\n");
+
+              var count = 0;
+              var totals = version.FlagList.Count;
+              foreach (var symbol in version.FlagList)
+              {
+                count++;
+                if (count % 100 == 0)
+                  console.Out.Write($"  Pending {count}/{totals}\n");
+
+                await context.ExecuteAsync(new DataUtils.StoreProcedure("spAddSymbol")
+                  .AddParameter("@Build", version.Build)
+                  .AddObjectAsParameters(symbol));
+              }
+
+              await transaction.CommitAsync(cancellationToken);
+            }
+          }
+        }
+        catch (System.Exception ex)
+        {
+          throw;
+        }
+      }
 
       return await Task.FromResult(0);
     }

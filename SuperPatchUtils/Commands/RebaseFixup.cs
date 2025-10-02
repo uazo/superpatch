@@ -23,7 +23,7 @@ namespace SuperPatchUtils.Commands
       ];
     }
 
-    private class Data
+    private sealed class Data
     {
       public string Method { get; set; }
       public string Hash { get; set; }

@@ -11,6 +11,7 @@ namespace SuperPatchUtils.Commands
 {
   public static class FetchVariations
   {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S1075:URIs should not be hardcoded", Justification = "needed")]
     private const string kDefaultServerUrl = "https://clientservices.googleapis.com/chrome-variations/seed";
 
     internal static IEnumerable<Command> GetCommands()
@@ -63,6 +64,11 @@ namespace SuperPatchUtils.Commands
         .ToList();
 
       var aa = zz.Where(x => x.FeatureAssociation.EnableFeature.Contains("DeprecateUnload")).ToList();
+
+      var names =
+        zz.Select(x => x.Experiment.Experiment.Name).Distinct().OrderBy(x => x).ToList();
+
+      var a1 = zz.Where(x => x.Experiment.Experiment.Name.ToLower().Contains("kill")).ToList();
 
       return 0;
     }

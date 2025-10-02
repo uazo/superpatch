@@ -15,6 +15,7 @@ namespace SuperPatch.Core.Storages
       public string Url { get; internal set; }
       public string RevisionIndex { get; internal set; }
       public string Revision { get; internal set; }
+      public bool ExtractFormAssignment { get; internal set; }
     }
 
     protected HttpClient Http { get; private set; }
@@ -50,6 +51,13 @@ namespace SuperPatch.Core.Storages
         Url = "https://raw.githubusercontent.com/google/skia",
         RevisionIndex = "skia_revision"
       });
+      subModulesInfos.Add(new SubModulesInfo()
+      {
+        Path = "third_party/perfetto/",
+        Url = "https://raw.githubusercontent.com/google/perfetto",
+        RevisionIndex = "/external/github.com/google/perfetto.git",
+        ExtractFormAssignment = true,
+      });
     }
 
     protected virtual async Task FetchChromiumCommit()
@@ -59,24 +67,48 @@ namespace SuperPatch.Core.Storages
 
       var depsByte = await GetFileAsync("DEPS");
       foreach (var submodule in subModulesInfos)
-        submodule.Revision = GetRevision(depsByte, submodule.RevisionIndex);
+        submodule.Revision = GetRevision(depsByte, submodule);
 
       await Task.CompletedTask;
     }
 
-    private static string GetRevision(byte[] file, string index)
+    private static string GetRevision(byte[] file, SubModulesInfo modulesInfo)
     {
       string deps = Encoding.UTF8.GetString(file);
-      var rev = $"'{index}'";
-      foreach (var line in deps.Split("\n"))
+      if (!modulesInfo.ExtractFormAssignment)
+        return GetRevision(deps, modulesInfo.RevisionIndex);
+      else
       {
-        if (line.Contains(rev))
+        // Var('chromium_git') + '/external/github.com/google/perfetto.git' + '@' + '43afaf571d990c0f3275c6800cf3ed42138bdc26'
+        var rev = $"'{modulesInfo.RevisionIndex}'";
+        foreach (var line in deps.Split("\n"))
         {
-          string value = line.Split(":")[1]
-            .Replace("'", "")
-            .Replace(",", "")
-            .Trim();
-          return value;
+          if (line.Contains(rev))
+          {
+            var splits = line.Split("'");
+            return splits[^2]
+              .Trim();
+          }
+        }
+      }
+      throw new NotSupportedException();
+    }
+
+    private static string GetRevision(string deps, string index)
+    {
+      if (!string.IsNullOrEmpty(deps))
+      {
+        var rev = $"'{index}'";
+        foreach (var line in deps.Split("\n"))
+        {
+          if (line.Contains(rev))
+          {
+            string value = line.Split(":")[1]
+              .Replace("'", "")
+              .Replace(",", "")
+              .Trim();
+            return value;
+          }
         }
       }
       throw new NotSupportedException();
@@ -120,7 +152,7 @@ namespace SuperPatch.Core.Storages
           if (!System.IO.Directory.Exists(directory))
             System.IO.Directory.CreateDirectory(directory);
 
-          System.IO.File.WriteAllBytes(localFile, content);
+          await System.IO.File.WriteAllBytesAsync(localFile, content);
         }
 
         return content;

@@ -21,42 +21,49 @@ namespace SuperPatchUtils.Commands.Utils
     {
       int fileCount = fileToDownload.Count;
       int currentFile = 0;
-      foreach (var file in fileToDownload)
-      {
-        currentFile++;
-        try
+
+      await Parallel.ForEachAsync(
+        fileToDownload,
+        new ParallelOptions()
         {
-          string filePath = CombineDirectory(outputdir, file.From);
-
-          if (System.IO.File.Exists(filePath))
-          {
-            Console.WriteLine($"File already exists {file.From}");
-          }
-          else
-          {
-            Console.WriteLine($"[{currentFile}/{fileCount}] Downloading {file.From}");
-
-            var content = await wrk.Storage.GetFileAsync(file);
-
-            string directory = System.IO.Path.GetDirectoryName(filePath);
-            if (System.IO.Directory.Exists(directory) == false)
-              System.IO.Directory.CreateDirectory(directory);
-
-            System.IO.File.WriteAllBytes(filePath, content);
-          }
-        }
-        catch (System.Exception ex)
+          MaxDegreeOfParallelism = 5
+        },
+        async (file, token) =>
         {
-          Console.WriteLine(ex.Message);
-          failed.Add(file);
-        }
-      }
+          currentFile++;
+          try
+          {
+            string filePath = CombineDirectory(outputdir, file.From);
 
-      return new RepoData()
+            if (System.IO.File.Exists(filePath))
+            {
+              Console.WriteLine($"File already exists {file.From}");
+            }
+            else
+            {
+              Console.WriteLine($"[{currentFile}/{fileCount}] Downloading {file.From}");
+
+              var content = await wrk.Storage.GetFileAsync(file);
+
+              string directory = System.IO.Path.GetDirectoryName(filePath);
+              if (!System.IO.Directory.Exists(directory))
+                System.IO.Directory.CreateDirectory(directory);
+
+              await System.IO.File.WriteAllBytesAsync(filePath, content);
+            }
+          }
+          catch (Exception ex)
+          {
+            Console.WriteLine(ex.Message);
+            failed.Add(file);
+          }
+        });
+
+      return await Task.FromResult(new RepoData()
       {
         Workspace = wrk,
         Files = fileToDownload
-      };
+      });
     }
 
     public static Command WithHandler(this Command command, Type ClassType, string methodName)

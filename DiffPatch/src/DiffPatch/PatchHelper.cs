@@ -38,7 +38,7 @@ namespace DiffPatch
             }
             else if (lineDiff.Delete)
             {
-              if( dstLines.Count != lineIndex)
+              if (dstLines.Count != lineIndex)
                 dstLines.RemoveAt(lineIndex);
             }
             else if (lineDiff.Normal)
@@ -47,11 +47,10 @@ namespace DiffPatch
             }
           }
         }
-        catch // (Exception ex)
-				{
-          throw;
-				}
-
+        catch (Exception ex)
+        {
+          // throw;
+        }
       }
 
       string patchString = string.Join(lineEnding, dstLines.ToArray());

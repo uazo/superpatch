@@ -15,7 +15,7 @@ namespace SuperPatch.Core.Storages
       public string Url { get; internal set; }
       public string RevisionIndex { get; internal set; }
       public string Revision { get; internal set; }
-      public bool ExtractFormAssignment { get; internal set; }
+      public bool ExtractFromAssignment { get; internal set; }
     }
 
     protected HttpClient Http { get; private set; }
@@ -56,7 +56,13 @@ namespace SuperPatch.Core.Storages
         Path = "third_party/perfetto/",
         Url = "https://raw.githubusercontent.com/google/perfetto",
         RevisionIndex = "/external/github.com/google/perfetto.git",
-        ExtractFormAssignment = true,
+        ExtractFromAssignment = true,
+      });
+      subModulesInfos.Add(new SubModulesInfo()
+      {
+        Path = "third_party/boringssl/",
+        Url = "https://raw.githubusercontent.com/google/boringssl",
+        RevisionIndex = "boringssl_revision",
       });
     }
 
@@ -75,7 +81,7 @@ namespace SuperPatch.Core.Storages
     private static string GetRevision(byte[] file, SubModulesInfo modulesInfo)
     {
       string deps = Encoding.UTF8.GetString(file);
-      if (!modulesInfo.ExtractFormAssignment)
+      if (!modulesInfo.ExtractFromAssignment)
         return GetRevision(deps, modulesInfo.RevisionIndex);
       else
       {

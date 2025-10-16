@@ -60,7 +60,7 @@ namespace SuperPatch.Core.Storages
       });
       subModulesInfos.Add(new SubModulesInfo()
       {
-        Path = "third_party/boringssl/",
+        Path = "third_party/boringssl/src/",
         Url = "https://raw.githubusercontent.com/google/boringssl",
         RevisionIndex = "boringssl_revision",
       });

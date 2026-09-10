@@ -149,7 +149,7 @@ namespace SuperPatch.Core.Storages
 
       try
       {
-        var content = await Http.GetByteArrayAsync(url);
+        var content = await GetByteArrayAsyncWithRetry(url);
 
         if (_CacheDirectory != null)
         {
@@ -167,6 +167,33 @@ namespace SuperPatch.Core.Storages
       {
         throw new Exception($"Url {url} error: {ex}", ex);
       }
+    }
+
+    private async Task<byte[]> GetByteArrayAsyncWithRetry(string url)
+    {
+      int retryCount = 0;
+      HttpRequestException lastException = null;
+
+      while (retryCount <= 3)
+      {
+        try
+        {
+          var content = await Http.GetByteArrayAsync(url);
+          return content;
+        }
+        catch (HttpRequestException ex)
+        {
+          lastException = ex;
+          if (ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+          {
+            retryCount++;
+            System.Threading.Thread.Sleep(2000 * retryCount);
+            continue;
+          }
+          throw;
+        }
+      }
+      throw lastException;
     }
   }
 }
